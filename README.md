@@ -9,16 +9,16 @@ wk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wi
 Roadmap
 ---
 
-*0.1 fork gomvc, refactoring. april 2013  
-*0.2 configration framework. april 2013  
-*0.3 web api server. april 2013  
-*0.4 view engine. may 2013  
-*0.5 move to go 1.1. june 2013  
-*0.6 more example. july 2013  
-*0.7 cookie, session 
-*0.8 file  
-*...
-*1.0 ready for use
+* 0.1 fork gomvc, refactoring. april 2013  
+* 0.2 configration framework. april 2013  
+* 0.3 web api server. april 2013  
+* 0.4 view engine. may 2013  
+* 0.5 move to go 1.1. june 2013  
+* 0.6 more example. july 2013  
+* 0.7 cookie, session 
+* 0.8 file  
+
+* 1.0 ready for use
 
 Requirements
 ---
@@ -68,7 +68,6 @@ TODO:
 * customer result
 * customer processor
 * return file stream
-* 
 
 ORM
 ---
