@@ -3,6 +3,8 @@
 
 package wk
 
+import ()
+
 // RenderProcessor rende http result to client
 type RenderProcessor struct {
 	server *HttpServer
@@ -18,6 +20,7 @@ func (p *RenderProcessor) Register(server *HttpServer) {
 
 // Execute rende result to client
 func (p *RenderProcessor) Execute(ctx *HttpContext) {
+
 	if ctx.Result == nil {
 		if ctx.Error != nil {
 			ctx.Result = &ErrorResult{
@@ -26,7 +29,11 @@ func (p *RenderProcessor) Execute(ctx *HttpContext) {
 		}
 	}
 
-	p.server.Fire(_render, _eventResultExecuting, p, nil, ctx)
+	if ctx.Result == nil {
+		ctx.Result = errNoResult
+	}
+
+	p.server.Fire(_render, _eventStartResultExecute, p, nil, ctx)
 	ctx.Result.Execute(ctx)
-	p.server.Fire(_render, _eventResultExecuted, p, nil, ctx)
+	p.server.Fire(_render, _eventEndResultExecute, p, nil, ctx)
 }

@@ -43,15 +43,15 @@ func (p *Process) match(ctx *HttpContext) bool {
 type ProcessTable []*Process
 
 // Append add a process at end
-func (pt ProcessTable) Append(p *Process) {
-	pt = append(pt, p)
+func (pt *ProcessTable) Append(p *Process) {
+	*pt = append(*pt, p)
 }
 
 // Remove delet a process by name
-func (pt ProcessTable) Remove(name string) {
-	for i := 0; i < len(pt); i++ {
-		if pt[i].Name == name {
-			pt = append(pt[:i], pt[i+1:]...)
+func (pt *ProcessTable) Remove(name string) {
+	for i := 0; i < len(*pt); i++ {
+		if (*pt)[i].Name == name {
+			*pt = append((*pt)[:i], (*pt)[i+1:]...)
 		}
 	}
 }
@@ -60,8 +60,7 @@ var Processes ProcessTable
 
 // init ProcessTable
 func init() {
-	Processes = make([]*Process, 0)
-
+	Processes = make([]*Process, 0, 11)
 	RegisterProcessor(_static, newStaticProcessor())
 	RegisterProcessor(_route, newRouteProcessor())
 	RegisterProcessor(_render, newRenderProcessor())

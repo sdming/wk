@@ -35,7 +35,7 @@ type HttpServer struct {
 	Processes ProcessTable
 
 	// RouteTable
-	RouteTable RouteTable
+	RouteTable *RouteTable
 
 	//server variables
 	Variables map[string]interface{}
@@ -43,7 +43,7 @@ type HttpServer struct {
 
 // Fire can fire a event
 func (srv *HttpServer) Fire(moudle, name string, source, data interface{}, context *HttpContext) {
-	if LogLevel > -LogDebug {
+	if LogLevel >= LogInfo {
 		Logger.Println("fire event", moudle, name)
 	}
 
@@ -91,7 +91,7 @@ func (srv *HttpServer) init() error {
 	srv.Variables = make(map[string]interface{})
 	srv.RouteTable = newRouteTable()
 
-	// copy hander, maybe does not need this?
+	// copy hander, maybe does not need this?	
 	l := len(Processes)
 	srv.Processes = make([]*Process, l)
 	for i := 0; i < l; i++ {
@@ -141,15 +141,10 @@ func (srv *HttpServer) Start() (err error) {
 	}
 	Logger.Println("http server is starting")
 
-	if err = srv.init(); err != nil {
-		Logger.Println("http server init fail:", err)
-		return
-	}
-
-	log.Println("Address:", srv.Config.Address,
-		"RootDir:", srv.Config.RootDir,
-		"ConfigDir:", srv.Config.ConfigDir,
-		"PublicDir:", srv.Config.PublicDir,
+	Logger.Println("Address:", srv.Config.Address,
+		"\n\t RootDir:", srv.Config.RootDir,
+		"\n\t ConfigDir:", srv.Config.ConfigDir,
+		"\n\t PublicDir:", srv.Config.PublicDir,
 	)
 
 	if err = srv.listenAndServe(); err != nil {
@@ -185,7 +180,7 @@ func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "http server panic %v : %v\n", r.URL, err)
 		buf.Write(debug.Stack())
-		log.Print(buf.String())
+		Logger.Println(buf.String())
 
 		http.Error(w, msgServerInternalErr, codeServerInternaError)
 
@@ -193,15 +188,15 @@ func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx := srv.buildContext(w, r)
 
-	if LogLevel >= LogInfo {
+	if LogLevel >= LogDebug {
 		Logger.Println("request start", ctx.Method, ctx.RequestPath)
 	}
-	srv.Fire(_wkWebServer, _requestStart, srv, nil, ctx)
+	srv.Fire(_wkWebServer, _eventStartRequest, srv, nil, ctx)
 
 	srv.doServer(ctx)
 
-	srv.Fire(_wkWebServer, _requestEnd, srv, nil, ctx)
-	if LogLevel >= LogInfo {
+	srv.Fire(_wkWebServer, _eventEndRequest, srv, nil, ctx)
+	if LogLevel >= LogDebug {
 		Logger.Println("request end", ctx.Method, ctx.RequestPath, ctx.Result, ctx.Error)
 	}
 
@@ -238,6 +233,11 @@ func (srv *HttpServer) exeProcess(ctx *HttpContext, p *Process) (err error) {
 
 	defer func() {
 		if x := recover(); x != nil {
+			if LogLevel >= LogError {
+				Logger.Println("execute process recover:", p.Name, x)
+				Logger.Println(string(debug.Stack()))
+			}
+
 			if e, ok := x.(error); ok {
 				err = e
 			} else {
@@ -247,11 +247,11 @@ func (srv *HttpServer) exeProcess(ctx *HttpContext, p *Process) (err error) {
 		}
 	}()
 
-	srv.Fire(p.Name, _eventExecuting, p, nil, ctx)
+	srv.Fire(p.Name, _eventStartExecute, p, nil, ctx)
 
 	p.Handler.Execute(ctx)
 
-	srv.Fire(p.Name, _eventExecuted, p, nil, ctx)
+	srv.Fire(p.Name, _eventEndExecute, p, nil, ctx)
 
 	if LogLevel >= LogDebug {
 		Logger.Println("process end", p.Name, err)

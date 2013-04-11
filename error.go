@@ -17,9 +17,9 @@ type ErrorResult struct {
 // String
 func (e *ErrorResult) String() string {
 	if e == nil {
-		return "<nil"
+		return "<nil>"
 	}
-	return "error result, tag:" + e.Tag + ", message:" + e.Err.Error() + ";\n"
+	return e.Err.Error()
 }
 
 // Error return a *ErrorResult

@@ -3,12 +3,12 @@
 
 package wk
 
-// // JsonpResult
-// type JsonpResult struct {
-// 	Data interface{}
-// }
+// JsonpResult
+type JsonpResult struct {
+	Data interface{}
+}
 
-// // Execute
-// func (j *JsonpResult) Execute(ctx *HttpContext) {
-// 	panic("TODO:JsonpResult")
-// }
+// Execute
+func (j *JsonpResult) Execute(ctx *HttpContext) {
+	panic("TODO:JsonpResult")
+}

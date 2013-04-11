@@ -5,8 +5,80 @@ package wk
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strconv"
 )
+
+type RouteData map[string]string
+
+func (r RouteData) Int(name string) (int, bool) {
+	if s, ok := r[name]; ok {
+		if i, err := strconv.Atoi(s); err == nil {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func (r RouteData) IntOr(name string, v int) int {
+	if s, ok := r[name]; ok {
+		if i, err := strconv.Atoi(s); err == nil {
+			return i
+		}
+	}
+	return v
+}
+
+func (r RouteData) Bool(name string) (bool, bool) {
+	if s, ok := r[name]; ok {
+		if b, err := strconv.ParseBool(s); err != nil {
+			return b, true
+		}
+	}
+	return false, false
+}
+
+func (r RouteData) BoolOr(name string, v bool) bool {
+	if s, ok := r[name]; ok {
+		if b, err := strconv.ParseBool(s); err != nil {
+			return b
+		}
+	}
+	return v
+}
+
+func (r RouteData) Float(name string) (float64, bool) {
+	if s, ok := r[name]; ok {
+		if f, err := strconv.ParseFloat(s, 64); err != nil {
+			return f, true
+		}
+	}
+	return 0, false
+}
+
+func (r RouteData) FloatOr(name string, v float64) float64 {
+	if s, ok := r[name]; ok {
+		if f, err := strconv.ParseFloat(s, 64); err != nil {
+			return f
+		}
+	}
+	return v
+}
+
+func (r RouteData) Str(name string) (string, bool) {
+	if s, ok := r[name]; ok {
+		return s, true
+	}
+	return "", false
+}
+
+func (r RouteData) StrOr(name string, v string) string {
+	if s, ok := r[name]; ok {
+		return s
+	}
+	return v
+}
 
 // http context
 type HttpContext struct {
@@ -27,7 +99,7 @@ type HttpContext struct {
 	PhysicalPath string
 
 	// route data
-	RouteData map[string]string
+	RouteData RouteData
 
 	// view Data
 	ViewData map[string]interface{}
@@ -57,10 +129,64 @@ func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
 }
 
-// QueryValue return value from request URL query 
-func (ctx *HttpContext) QueryValue(name string) []string {
-	return ctx.Request.URL.Query()[name]
+func (ctx *HttpContext) FormInt(name string) (int, bool) {
+	if s := ctx.FormValue(name); s != "" {
+		if i, err := strconv.Atoi(s); err == nil {
+			return i, true
+		}
+	}
+	return 0, false
 }
+
+func (ctx *HttpContext) FormIntOr(name string, v int) int {
+	if s := ctx.FormValue(name); s != "" {
+		if i, err := strconv.Atoi(s); err == nil {
+			return i
+		}
+	}
+	return v
+}
+
+func (ctx *HttpContext) FormBool(name string) (bool, bool) {
+	if s := ctx.FormValue(name); s != "" {
+		if b, err := strconv.ParseBool(s); err != nil {
+			return b, true
+		}
+	}
+	return false, false
+}
+
+func (ctx *HttpContext) FormBoolOr(name string, v bool) bool {
+	if s := ctx.FormValue(name); s != "" {
+		if b, err := strconv.ParseBool(s); err != nil {
+			return b
+		}
+	}
+	return v
+}
+
+func (ctx *HttpContext) FormFloat(name string) (float64, bool) {
+	if s := ctx.FormValue(name); s != "" {
+		if f, err := strconv.ParseFloat(s, 64); err != nil {
+			return f, true
+		}
+	}
+	return 0, false
+}
+
+func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
+	if s := ctx.FormValue(name); s != "" {
+		if f, err := strconv.ParseFloat(s, 64); err != nil {
+			return f
+		}
+	}
+	return v
+}
+
+// // QueryValue return value from request URL query 
+// func (ctx *HttpContext) QueryValue(name string) []string {
+// 	return ctx.Request.URL.Query()[name]
+// }
 
 // UserAgent return request User-Agent header
 func (ctx *HttpContext) UserAgent() string {
@@ -135,4 +261,8 @@ func (ctx *HttpContext) SetFlash(key string, v interface{}) {
 		ctx.Flash = make(map[string]interface{})
 	}
 	ctx.Flash[key] = v
+}
+
+func (ctx *HttpContext) ReadBody() ([]byte, error) {
+	return ioutil.ReadAll(ctx.Request.Body)
 }

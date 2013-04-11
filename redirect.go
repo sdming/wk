@@ -3,16 +3,29 @@
 
 package wk
 
+import (
+	"net/http"
+)
+
 // RedirectResult
 type RedirectResult struct {
 	// Permanent mean redirect permanent or not
 	Permanent bool
 
-	// Path it the url to redirect
-	Path string
+	// UrlStr  it the url to redirect
+	UrlStr string
 }
 
 // Execute
 func (r *RedirectResult) Execute(ctx *HttpContext) {
-	panic("TODO:RedirectResult")
+	var code int
+
+	if r.Permanent {
+		code = http.StatusMovedPermanently
+		return
+	} else {
+		code = http.StatusFound
+	}
+
+	http.Redirect(ctx.Resonse, ctx.Request, r.UrlStr, code)
 }

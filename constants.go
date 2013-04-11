@@ -54,9 +54,10 @@ const (
 const (
 	msgServerTimeout     = "server timeout"
 	msgServerInternalErr = "server internal error"
-	msgNotFound          = "404 not found"
-	msgNoResult          = "no response"
+	msgNotFound          = "404 page not found"
+	msgNoResult          = "no result"
 	msgNoAction          = "can not find action"
+	StatusNotModified
 )
 
 const (
@@ -82,13 +83,15 @@ const (
 )
 
 const (
-	_wkWebServer          = "_webserver"
-	_requestStart         = "requeststart"
-	_requestEnd           = "requestend"
-	_eventExecuting       = "executing"
-	_eventExecuted        = "executed"
-	_eventResultExecuted  = "resultexecuted"
-	_eventResultExecuting = "resultexecuting"
+	_wkWebServer             = "_webserver"
+	_eventStartRequest       = "start_request"
+	_eventEndRequest         = "end_request"
+	_eventStartExecute       = "start_execute"
+	_eventEndExecute         = "end_execute"
+	_eventStartResultExecute = "start_result"
+	_eventEndResultExecute   = "end_result"
+	_eventStartAction        = "start_action"
+	_eventEndAction          = "end_action"
 )
 
 const (

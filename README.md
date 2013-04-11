@@ -17,7 +17,7 @@ Roadmap
 * 0.6 more example. july 2013  
 * 0.7 cookie, session 
 * 0.8 file  
-
+* 0.9 custome error & 404 page
 * 1.0 ready for use
 
 Requirements

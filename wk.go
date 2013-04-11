@@ -16,7 +16,12 @@ var (
 	errInternalError = errors.New(msgServerInternalErr)
 
 	// errNoaction mean can not find actionin controller
-	errNoaction = errors.New(msgNoAction)
+	errNoAction = errors.New(msgNoAction)
+
+	// errNoResult mean httpcontext result is nil
+	errNoResult = &ErrorResult{
+		Err: errors.New(msgNoResult),
+	}
 )
 
 var (
@@ -35,7 +40,7 @@ var (
 	Logger *log.Logger
 
 	// LogLevel is level of log
-	LogLevel int = LogDebug
+	LogLevel int = LogError
 
 	// EnableProfile mean enable http profile or not
 	EnableProfile bool = false
@@ -54,4 +59,6 @@ func (se *ServerError) Error() string {
 // 	Text() ([]byte, error)
 // }
 
-type Handler func(*HttpContext)
+type Handler interface {
+	Execute(*HttpContext)
+}
