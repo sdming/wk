@@ -76,7 +76,7 @@ const (
 	_route          = "_route"
 	_static         = "_static"
 	_render         = "_render"
-	_action         = "_action"
+	_action         = "action"
 	_notFoundAction = "noaction"
 	_defaultAction  = "default"
 	_serverName     = "go web server "

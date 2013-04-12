@@ -32,7 +32,7 @@ func (r RouteData) IntOr(name string, v int) int {
 
 func (r RouteData) Bool(name string) (bool, bool) {
 	if s, ok := r[name]; ok {
-		if b, err := strconv.ParseBool(s); err != nil {
+		if b, err := strconv.ParseBool(s); err == nil {
 			return b, true
 		}
 	}
@@ -41,7 +41,7 @@ func (r RouteData) Bool(name string) (bool, bool) {
 
 func (r RouteData) BoolOr(name string, v bool) bool {
 	if s, ok := r[name]; ok {
-		if b, err := strconv.ParseBool(s); err != nil {
+		if b, err := strconv.ParseBool(s); err == nil {
 			return b
 		}
 	}
@@ -50,7 +50,7 @@ func (r RouteData) BoolOr(name string, v bool) bool {
 
 func (r RouteData) Float(name string) (float64, bool) {
 	if s, ok := r[name]; ok {
-		if f, err := strconv.ParseFloat(s, 64); err != nil {
+		if f, err := strconv.ParseFloat(s, 64); err == nil {
 			return f, true
 		}
 	}
@@ -59,7 +59,7 @@ func (r RouteData) Float(name string) (float64, bool) {
 
 func (r RouteData) FloatOr(name string, v float64) float64 {
 	if s, ok := r[name]; ok {
-		if f, err := strconv.ParseFloat(s, 64); err != nil {
+		if f, err := strconv.ParseFloat(s, 64); err == nil {
 			return f
 		}
 	}
@@ -149,7 +149,7 @@ func (ctx *HttpContext) FormIntOr(name string, v int) int {
 
 func (ctx *HttpContext) FormBool(name string) (bool, bool) {
 	if s := ctx.FormValue(name); s != "" {
-		if b, err := strconv.ParseBool(s); err != nil {
+		if b, err := strconv.ParseBool(s); err == nil {
 			return b, true
 		}
 	}
@@ -158,7 +158,7 @@ func (ctx *HttpContext) FormBool(name string) (bool, bool) {
 
 func (ctx *HttpContext) FormBoolOr(name string, v bool) bool {
 	if s := ctx.FormValue(name); s != "" {
-		if b, err := strconv.ParseBool(s); err != nil {
+		if b, err := strconv.ParseBool(s); err == nil {
 			return b
 		}
 	}
@@ -167,7 +167,7 @@ func (ctx *HttpContext) FormBoolOr(name string, v bool) bool {
 
 func (ctx *HttpContext) FormFloat(name string) (float64, bool) {
 	if s := ctx.FormValue(name); s != "" {
-		if f, err := strconv.ParseFloat(s, 64); err != nil {
+		if f, err := strconv.ParseFloat(s, 64); err == nil {
 			return f, true
 		}
 	}
@@ -176,7 +176,7 @@ func (ctx *HttpContext) FormFloat(name string) (float64, bool) {
 
 func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
 	if s := ctx.FormValue(name); s != "" {
-		if f, err := strconv.ParseFloat(s, 64); err != nil {
+		if f, err := strconv.ParseFloat(s, 64); err == nil {
 			return f
 		}
 	}

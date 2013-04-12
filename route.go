@@ -268,7 +268,7 @@ type structBinder struct {
 }
 
 func newStructBinder(fv reflect.Value) *structBinder {
-	method := gotype.GetMethodInfo(fv)
+	method := gotype.GetMethodInfoByValue(fv)
 
 	return &structBinder{
 		method: method,
@@ -332,7 +332,7 @@ type namedBinder struct {
 }
 
 func newNamedBinder(args []string, fv reflect.Value) *namedBinder {
-	method := gotype.GetMethodInfo(fv)
+	method := gotype.GetMethodInfoByValue(fv)
 
 	return &namedBinder{
 		method:  method,
@@ -375,7 +375,7 @@ type indexBinder struct {
 }
 
 func newIndexBinder(fv reflect.Value) *indexBinder {
-	method := gotype.GetMethodInfo(fv)
+	method := gotype.GetMethodInfoByValue(fv)
 	return &indexBinder{
 		method: method,
 	}

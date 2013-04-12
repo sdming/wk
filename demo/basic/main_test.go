@@ -1,13 +1,17 @@
 package main_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
+	"fmt"
 	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk/demo/basic/model"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -15,27 +19,36 @@ import (
 var defaultAccept = "text/html, application/xhtml+xml, */*"
 var baseUrl = "http://localhost:8080"
 
-func curl(method, url string, form url.Values) (string, error) {
+func curl(method, urlstr string, data interface{}) (string, error) {
 	var resp *http.Response
 	var err error
+	client := &http.Client{}
 
-	url = baseUrl + url
+	urlstr = baseUrl + urlstr
 
 	if method == "GET" {
-		resp, err = http.Get(url)
+		resp, err = client.Get(urlstr)
 	} else if method == "POST" {
-		resp, err = http.PostForm(url, form)
+		if form, ok := data.(url.Values); ok {
+			resp, err = client.PostForm(urlstr, form)
+		} else if buf, ok := data.([]byte); ok {
+			resp, err = client.Post(urlstr, "text/plain", bytes.NewReader(buf))
+		} else {
+			err = errors.New("error post data ")
+		}
 	} else if method == "DELETE" {
-		req, err := http.NewRequest(method, url, nil)
+		var req *http.Request
+		req, err = http.NewRequest(method, urlstr, nil)
 		if err != nil {
 			return "", err
 		}
-		client := &http.Client{}
 		resp, err = client.Do(req)
 	}
 
 	if err != nil {
-		resp.Body.Close()
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
 		return "", err
 	}
 
@@ -49,17 +62,17 @@ func curl(method, url string, form url.Values) (string, error) {
 	return string(b), nil
 }
 
-func dotest(t *testing.T, method, url string, form url.Values, expect string) {
+func dotest(t *testing.T, method, url string, data interface{}, expect string) {
 	t.Log(method, url)
 
-	actual, err := curl(method, url, form)
+	actual, err := curl(method, url, data)
 	if err != nil {
-		t.Error("error: curl", method, url, err)
+		t.Error("curl error:", err, method, url)
 		return
 	}
 
 	//t.Log("expect:", expect)
-	t.Log("actual:", actual)
+	//t.Log("actual:", actual)
 
 	if strings.TrimSpace(expect) != strings.TrimSpace(actual) {
 		t.Error("error:", method, url, "expect:", expect, "actual:", actual)
@@ -92,19 +105,22 @@ func Kson(x interface{}) string {
 }
 
 func BenchmarkHandle(b *testing.B) {
-	url := "/data/top/10"
+	url := "/data/top/1"
 	btestGet(b, url)
 }
 
 func BenchmarkDataByInt(b *testing.B) {
-
 	url := "/data/1"
 	btestGet(b, url)
 }
 
 func BenchmarkDataByIntJson(b *testing.B) {
-
 	url := "/data/1/json"
+	btestGet(b, url)
+}
+
+func BenchmarkControllerRangeCount(b *testing.B) {
+	url := "/demo/rangecount/?start=1&end=99"
 	btestGet(b, url)
 }
 
@@ -142,4 +158,47 @@ func TestRoute(t *testing.T) {
 	dotest(t, "GET", "/data/set?str=string&uint=1024&int=32&float=3.14&byte=64", nil,
 		Json(model.DataSet("string", 1024, 32, 3.14, 64)))
 
+}
+
+func demoData() *model.Data {
+	return &model.Data{
+		Int:   32,
+		Uint:  1024,
+		Str:   "string",
+		Float: 1.1,
+		Byte:  64,
+	}
+}
+
+func dump(d *model.Data) {
+	fmt.Printf("%#v \n", d)
+}
+
+func TestController(t *testing.T) {
+
+	data := make([]*model.Data, 0)
+
+	dotest(t, "GET", "/demo/clear/", nil, "0")
+
+	dotest(t, "GET", "/demo/all/", nil, Json(data))
+
+	dotest(t, "GET", "/demo/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
+	data = append(data, demoData())
+	dotest(t, "GET", "/demo/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
+	data = append(data, demoData())
+
+	dotest(t, "GET", "/demo/all/", nil, Json(data))
+
+	dotest(t, "GET", "/demo/int/32", nil, Json(data))
+
+	dotest(t, "GET", "/demo/rangecount/?start=1&end=99", nil, strconv.Itoa(len(data)))
+
+	dotest(t, "GET", "/demo/put/32?str=s&uint=64&float=3.14&byte=8", nil, strconv.Itoa(len(data)))
+
+	dotest(t, "GET", "/demo/delete/32", nil, strconv.Itoa(len(data)))
+
+	dotest(t, "POST", "/demo/post/", []byte(Json(demoData())), "true")
+	dotest(t, "POST", "/demo/post/", []byte(Json(demoData())), "true")
+
+	dotest(t, "GET", "/demo/all/", nil, Json(data))
 }

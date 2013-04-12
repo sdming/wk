@@ -8,10 +8,12 @@ basic demo
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/controller"
 	"github.com/sdming/wk/demo/basic/model"
 )
 
@@ -35,7 +37,7 @@ func main() {
 		return
 	}
 
-	controller := newDemoController()
+	controller := controller.NewDemoController()
 
 	// url: /demo/xxx/xxx
 	// route to controller
@@ -104,99 +106,134 @@ func formatKson(ctx *wk.HttpContext, x interface{}) (wk.HttpResult, bool) {
 	return wk.Content(string(b), "text/plain"), true
 }
 
-// package user
+type DemoController struct {
+	data []*model.Data
+}
 
-// import (
-// 	"fmt"
-// 	"strconv"
-// 	"github.com/sdming/gomvc"
-// )
+func newDemoController() *DemoController {
+	return &DemoController{
+		data: make([]*model.Data, 0),
+	}
+}
 
-// //controller
-// type UserController struct {
-// }
+func (c *DemoController) deleteByInt(v int) {
+	for i := 0; i < len(c.data); i++ {
+		if c.data[i].Int == v {
+			c.data = append(c.data[:i], c.data[i+1:]...)
+		}
+	}
+}
 
-// //get http://localhost:8080/user/user/1000 (application/json; application/xml;text/plain;text/html)
-// //return struct, marshal to json/xml/text accoring to "Accept"
-// func (*UserController) User(id int) User {
-// 	return GetById(id)
-// }
+func (c *DemoController) getByInt(v int) []*model.Data {
+	data := make([]*model.Data, 0)
+	for i := 0; i < len(c.data); i++ {
+		if c.data[i].Int == v {
+			data = append(data, c.data[i])
+		}
+	}
+	return data
+}
 
-// //get http://localhost:8080/user/string/1000
-// //return string
-// func (*UserController) String(id int) string {
-// 	return GetById(id).String()
-// }
+// url: post /demo/post
+func (c *DemoController) Post(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	var body []byte
+	if body, err = ctx.ReadBody(); err != nil {
+		return nil, err
+	}
 
-// //get http://localhost:8080/user/int/1000
-// //return int
-// func (*UserController) Int(id int) int {
-// 	return GetById(id).Id
-// }
+	data := &model.Data{}
+	err = json.Unmarshal(body, data)
+	if err != nil {
+		return nil, err
+	}
+	c.data = append(c.data, data)
+	return wk.Data(true), nil
+}
 
-// //get http://localhost:8080/user/json/1000
-// //return json
-// func (*UserController) Json(id int) gomvc.HttpResult {
-// 	u := GetById(id)
-// 	return gomvc.Json(u)
-// }
+// url: /demo/all
+func (c *DemoController) All(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.Json(c.data), nil
+}
 
-// //get http://localhost:8080/user/xml/1000
-// //return xml
-// func (*UserController) Xml(id int) gomvc.HttpResult {
-// 	u := GetById(id)
-// 	return gomvc.Xml(u)
-// }
+// url: /demo/delete/1
+func (c *DemoController) Delete(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	l := len(c.data)
+	if i, ok := ctx.RouteData.Int("id"); ok {
+		c.deleteByInt(i)
+	}
+	return wk.Data(l - len(c.data)), nil
+}
 
-// //get http://localhost:8080/user/Slice/10
-// //return slice
-// func (*UserController) Slice(count int) []User {
-// 	users := Take(count)
-// 	return users
-// }
+// url: /demo/put/1?str=string&uint=1024&float=1.1&byte=64
+func (c *DemoController) Put(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	var id int
 
-// //get http://localhost:8080/user/search/123456_10_20
-// //muti parameter
-// func (*UserController) Search(zipcode string, ageFrom, ageTo int) []User {
-// 	users := Search(zipcode, ageFrom, ageTo)
-// 	return users
-// }
+	if i, ok := ctx.RouteData.Int("id"); ok {
+		id = i
+	} else {
+		return wk.Data(0), nil
+	}
 
-// //get http://localhost:8080/user/struct?Id=1000&Name=hello&Zipcode=000000&Age=18
-// //struct as parameter
-// //validation(TODO):required,pattern,type,max,min,range,maxLength,minLength, rangeLength,
-// //  number,date,time,zipcode,alphanumeric,lettersonly,email,url,greaterThan,lessThan
-// func (*UserController) Struct(p struct {
-// 	Id      int    `required, min:0`
-// 	Name    string `required, rangeLength:1-10`
-// 	Age     int    `default:1, range:0-99`
-// 	Zipcode string `pattern:[0-9]+`
-// },) User {
-// 	return User{Id: p.Id, Name: p.Name, Age: p.Age, ZipCode: p.Zipcode}
-// }
+	var count int = 0
+	for _, d := range c.data {
+		if d.Int != id {
+			continue
+		}
+		if x := ctx.FormValue("str"); x != "" {
+			d.Str = x
+		}
+		if x, ok := ctx.FormInt("uint"); ok {
+			d.Uint = uint64(x)
+		}
+		if x, ok := ctx.FormFloat("float"); ok {
+			d.Float = float32(x)
+		}
+		if x, ok := ctx.FormInt("byte"); ok {
+			d.Byte = byte(x)
+		}
+		count++
+	}
 
-// //post http://localhost:8080/user/post
-// //unmarshal parameter from json
-// func (*UserController) Post(u User) string {
-// 	return u.String()
-// }
+	return wk.Data(count), nil
+}
 
-// //GET http://localhost:8080/user/content
-// //access http context
-// func (*UserController) Content(ctx *gomvc.HttpContext) string {
-// 	return fmt.Sprintln("request", ctx.RequestPath)
-// }
+// url: /demo/clear
+func (c *DemoController) Clear(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	c.data = make([]*model.Data, 0)
+	return wk.Data(len(c.data)), nil
+}
 
-// //PUT http://localhost:8080/user/Put/1000
-// //put all them together
-// func (*UserController) Put(id int, u User, ctx *gomvc.HttpContext) string {
-// 	return fmt.Sprintf("%v %v %v", ctx.Method, id, u.String())
-// }
+// url: /demo/add?int=32&str=string&uint=1024&float=1.1&byte=64
+func (c *DemoController) Add(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	data := &model.Data{
+		Int:   ctx.FormIntOr("int", 0),
+		Uint:  uint64(ctx.FormIntOr("uint", 0)),
+		Str:   ctx.FormValue("str"),
+		Float: float32(ctx.FormFloatOr("float", 0.0)),
+		Byte:  byte(ctx.FormIntOr("byte", 0)),
+	}
+	c.data = append(c.data, data)
+	return wk.Data(len(c.data)), nil
+}
 
-// //http://localhost:8080/user/error
-// //raise error
-// func (*UserController) Error() string {
-// 	n := 0
-// 	i := 100 / n
-// 	return strconv.Itoa(i)
-// }
+// url: /demo/int/1
+func (c *DemoController) Int(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	if id, ok := ctx.RouteData.Int("id"); ok {
+		return wk.Json(c.getByInt(id)), nil
+	}
+	return wk.Data(""), nil
+}
+
+// url: /demo/RangeCount?start=1&end=9
+func (c *DemoController) RangeCount(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	start := ctx.RouteData.IntOr("start", 0)
+	end := ctx.RouteData.IntOr("end", 0)
+	var count int = 0
+
+	for _, d := range c.data {
+		if d.Int >= start && d.Int <= end {
+			count++
+		}
+	}
+	return wk.Data(count), nil
+}

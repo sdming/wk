@@ -4,13 +4,8 @@
 package wk
 
 import (
-	//"github.com/sdming/kiss"
-	"bytes"
-	"errors"
-	"fmt"
 	"github.com/sdming/kiss/gotype"
 	"reflect"
-	"runtime/debug"
 	"strings"
 )
 
@@ -49,40 +44,33 @@ type Controller struct {
 
 func newController(x interface{}) (c *Controller, err error) {
 
-	var handler reflect.Value
-	if v, ok := x.(reflect.Value); ok {
-		handler = v
-	} else {
-		handler = reflect.ValueOf(x)
-	}
+	handler := reflect.ValueOf(x)
+	handlerType := handler.Type()
 
 	c = &Controller{Handler: handler, Methods: make(map[string]*gotype.MethodInfo)}
-	if subscriber, ok := x.(ActionSubscriber); ok {
-		c.actionSubscriber = subscriber
-	}
+	c.actionSubscriber, _ = x.(ActionSubscriber)
 
 	for i := 0; i < handler.NumMethod(); i++ {
-		m := handler.Method(i)
-		typ := m.Type()
-		fmt.Println("method", m.Kind(), m, typ.PkgPath())
-
-		if !m.IsValid() || m.Kind() != reflect.Func || typ.Name() == "" {
+		method := handlerType.Method(i)
+		methodValue := handler.Method(i)
+		if !methodValue.IsValid() || methodValue.Kind() != reflect.Func || method.Name == "" {
 			continue
 		}
 
 		// not export
-		if typ.PkgPath() != "" {
+		if method.PkgPath != "" {
 			continue
 		}
 
-		c.Methods[typ.Name()] = gotype.GetMethodInfo(m)
+		methdoInfo := gotype.GetMethodInfo(method)
+		c.Methods[strings.ToLower(methdoInfo.Method.Name)] = methdoInfo
+
 	}
 	return c, nil
 }
 
 // findAction
 func (c *Controller) findAction(ctx *HttpContext) (method *gotype.MethodInfo, err error) {
-
 	actionName, ok := ctx.RouteData[_action]
 	if !ok || actionName == "" {
 		switch ctx.Method {
@@ -95,7 +83,6 @@ func (c *Controller) findAction(ctx *HttpContext) (method *gotype.MethodInfo, er
 		}
 	}
 	actionName = strings.ToLower(actionName)
-
 	if method, ok = c.Methods[actionName]; ok {
 		return
 	}
@@ -110,31 +97,24 @@ func (c *Controller) findAction(ctx *HttpContext) (method *gotype.MethodInfo, er
 }
 
 func (c *Controller) Execute(ctx *HttpContext) {
-	result, err := c.invoke(ctx)
-	if err != nil {
-		ctx.Error = err
-		return
-	}
-	ctx.Result = result
+	ctx.Result, ctx.Error = c.invoke(ctx)
 }
 
+// 
 func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
-	fmt.Println("invoke")
 	method, err := c.findAction(ctx)
-	fmt.Println("findAction", method, err)
-
 	if err != nil {
 		return nil, err
 	}
 
 	if LogLevel >= LogDebug {
-		Logger.Println("controller dispatch request to action", method)
+		Logger.Println("controller dispatch request to action", method.Method.Name)
 	}
 
 	var actionContext *ActionContext
 	actionContext = &ActionContext{
 		Controller: c.Handler,
-		Name:       method.Name,
+		Name:       method.Method.Name,
 		Context:    ctx,
 		Err:        nil,
 	}
@@ -145,8 +125,26 @@ func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 		c.actionSubscriber.OnActionExecuting(actionContext)
 	}
 
-	var handle func(*HttpContext) (HttpResult, error)
-	result, err = safeCallAction(ctx, handle)
+	//var handle func(*HttpContext) (HttpResult, error)
+	in := make([]reflect.Value, 2)
+	var out []reflect.Value
+	in[0] = c.Handler
+	in[1] = reflect.ValueOf(ctx)
+	out, err = safeCall(method.Func, in)
+	if err == nil {
+		if out[0].IsNil() {
+			result = nil
+		} else {
+			result = out[0].Interface().(HttpResult)
+		}
+		if !out[1].IsNil() {
+			err = out[1].Interface().(error)
+		} else {
+			err = nil
+		}
+	} else {
+		result = nil
+	}
 
 	actionContext.Err = err
 	actionContext.Result = result
@@ -162,26 +160,4 @@ func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 	c.server.Fire(_route, _eventEndAction, c, actionContext, ctx)
 
 	return result, err
-}
-
-func safeCallAction(ctx *HttpContext, handle func(*HttpContext) (HttpResult, error)) (result HttpResult, err error) {
-	defer func() {
-		if x := recover(); x != nil {
-			if LogLevel >= LogError {
-				var buf bytes.Buffer
-				fmt.Fprintf(&buf, "call action panic %v : %v \n", ctx.Request.URL, x)
-				buf.Write(debug.Stack())
-				Logger.Println(buf.String())
-			}
-
-			if e, ok := x.(error); ok {
-				err = e
-			} else {
-				err = errors.New(fmt.Sprintln("call action fail", x))
-			}
-		}
-
-	}()
-
-	return handle(ctx)
 }
