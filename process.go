@@ -7,9 +7,12 @@ import (
 	"strings"
 )
 
-// HttpProcessor
+// HttpProcessor handle request and build HttpResult(maybe)
 type HttpProcessor interface {
+	// Execute handle request
 	Execute(ctx *HttpContext)
+
+	// Register is called once when create a new server
 	Register(server *HttpServer)
 }
 
@@ -49,9 +52,11 @@ func (pt *ProcessTable) Append(p *Process) {
 
 // Remove delet a process by name
 func (pt *ProcessTable) Remove(name string) {
-	for i := 0; i < len(*pt); i++ {
+	for i := 0; i < len(*pt); {
 		if (*pt)[i].Name == name {
 			*pt = append((*pt)[:i], (*pt)[i+1:]...)
+		} else {
+			i++
 		}
 	}
 }
