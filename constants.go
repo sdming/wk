@@ -84,13 +84,13 @@ const (
 
 const (
 	_wkWebServer             = "_webserver"
-	_eventStartRequest       = "start_request"
-	_eventEndRequest         = "end_request"
-	_eventStartExecute       = "start_execute"
-	_eventEndExecute         = "end_execute"
-	_eventStartResultExecute = "start_result"
-	_eventEndResultExecute   = "end_result"
-	_eventStartAction        = "start_action"
+	_eventStartRequest       = "start_request" //request start
+	_eventEndRequest         = "end_request"   //request end
+	_eventStartExecute       = "start_execute" //processor start execute
+	_eventEndExecute         = "end_execute"   //processor end
+	_eventStartResultExecute = "start_result"  //start to execute result
+	_eventEndResultExecute   = "end_result"    //result execute end
+	_eventStartAction        = "start_action"  //
 	_eventEndAction          = "end_action"
 )
 

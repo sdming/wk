@@ -8,7 +8,7 @@ import ()
 // 
 type FormatList []FormatFunc
 
-//
+// return false if can not format data
 type FormatFunc func(*HttpContext, interface{}) (HttpResult, bool)
 
 // Append add a FormatFunc 

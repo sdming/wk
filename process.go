@@ -50,6 +50,11 @@ func (pt *ProcessTable) Append(p *Process) {
 	*pt = append(*pt, p)
 }
 
+// Insert add a process at index
+func (pt *ProcessTable) Insert(p *Process, index int) {
+	panic ("TODO:")
+}
+
 // Remove delet a process by name
 func (pt *ProcessTable) Remove(name string) {
 	for i := 0; i < len(*pt); {

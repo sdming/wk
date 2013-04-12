@@ -84,6 +84,19 @@ The handle lifecyle is
 3. run each HttpProcessor  
 4. execute HttpResult  
 
+HttpProcessor
+---
+
+You can add or remove HttpProcessor before server starting.  
+
+	type ProcessTable []*Process
+
+	func (pt *ProcessTable) Append(p *Process)
+
+	func (pt *ProcessTable) Remove(name string)
+
+	func (pt *ProcessTable) Insert(p *Process, index int) 
+
 
 Route
 ---
@@ -182,10 +195,20 @@ Current version only support method of type (*HttpContext) (result HttpResult, e
 		return wk.Data(""), nil
 	}
 
+
+Formatter
+---
+
+If function doesn't return HttpResult, server will convert result to HttpResult according Accept of request. you can set Formatter for each function, or register global Formatter.  
+
+	// return formatted (HttpResult, true) or return (nil, false) if doesn't format it
+	type FormatFunc func(*HttpContext, interface{}) (HttpResult, bool)
+
+
 Configration 
 ---
 
-wk can manage configration for you. below is config file example, more example at test/config_test.go
+wk can manage configration for you. below is config example, more example at test/config_test.go
 
 	#app config file demo
 
