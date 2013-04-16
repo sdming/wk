@@ -7,16 +7,16 @@ import (
 	"net/http"
 )
 
-// RedirectResult
+// RedirectResult is wrap of http.StatusMovedPermanently or http.StatusFound
 type RedirectResult struct {
 	// Permanent mean redirect permanent or not
 	Permanent bool
 
-	// UrlStr  it the url to redirect
+	// UrlStr is the url to redirect
 	UrlStr string
 }
 
-// Execute
+// Execute write status code http.StatusMovedPermanently or http.StatusFound
 func (r *RedirectResult) Execute(ctx *HttpContext) {
 	var code int
 

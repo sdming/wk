@@ -57,7 +57,6 @@ const (
 	msgNotFound          = "404 page not found"
 	msgNoResult          = "no result"
 	msgNoAction          = "can not find action"
-	StatusNotModified
 )
 
 const (

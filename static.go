@@ -12,16 +12,17 @@ type StaticProcessor struct {
 	server *HttpServer
 }
 
+// newStaticProcessor return default  *StaticProcessor
 func newStaticProcessor() *StaticProcessor {
 	return &StaticProcessor{}
 }
 
+// Register
 func (p *StaticProcessor) Register(server *HttpServer) {
 	p.server = server
 }
 
-
-// Execute return FileResult if request file exist, 
+// Execute set FileResult if request file does exist
 func (p *StaticProcessor) Execute(ctx *HttpContext) {
 	if ctx.Result != nil || ctx.Error != nil {
 		return

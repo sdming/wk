@@ -15,55 +15,55 @@ const (
 	// defaultAddress is default address to listen
 	defaultAddress string = "127.0.0.1:8080"
 
-	// defaultPubicDir is default path of public content
+	// defaultPubicDir is default directory of public content
 	defaultPubicDir string = "public"
 
-	// defaultConfigDir is default path of config files
+	// defaultConfigDir is default directory of config files
 	defaultConfigDir string = "conf"
 
-	// appConfigFile is default app coinfig file
+	// appConfigFile is default filename of app coinfig
 	appConfigFile string = "app.conf"
 
-	// webConfigFile is default web coinfig file
+	// webConfigFile is default file name of server coinfig 
 	webConfigFile string = "web.conf"
 
-	// pluginConfigFile is default plugin coinfig file
+	// pluginConfigFile is default file name of plugin coinfig
 	pluginConfigFile string = "plugin.conf"
 )
 
-// web server config
+// WebConfig is configuration of go web server
 type WebConfig struct {
-	// ServerKey to identify a server
+	// ServerKey is the identify of server
 	ServerKey string
 
 	// Address is the address to listen
 	Address string
 
-	// RootDir is the route of web application
+	// RootDir is the route directory of web application
 	RootDir string
 
-	// HandleTimeout in Second
+	// Timeout is timeout of http handle in second
 	Timeout int
 
-	// PublicDir is path of static files
+	// PublicDir is directory of static files
 	PublicDir string
 
-	// ConfigDir is path of config files
+	// ConfigDir is directory of config files
 	ConfigDir string
 
-	// AppConfig is config data for web app
+	// AppConfig is app configuration data
 	AppConfig *kson.Node
 
-	// PluginConfig is config data for plugins
+	// PluginConfig is configuration data of plugins
 	PluginConfig *kson.Node
 
-	// maximum duration before timing out read of the request, in second
+	// ReadTimeout is maximum duration before timing out read of the request, in second
 	ReadTimeout int
 
-	// maximum duration before timing out write of the response, in second
+	// WriteTimeout is maximum duration before timing out write of the response, in second
 	WriteTimeout int
 
-	// maximum size of request headers
+	// MaxHeaderBytes is maximum size of request headers
 	MaxHeaderBytes int
 }
 
@@ -76,7 +76,7 @@ func (conf *WebConfig) String() string {
 	return fmt.Sprintf("%#v", conf)
 }
 
-//  
+// init
 func (conf *WebConfig) init() {
 	if conf == nil {
 		return
@@ -96,6 +96,7 @@ func (conf *WebConfig) init() {
 
 }
 
+// defaultConfig return *WebConfig with default value
 func defaultConfig() *WebConfig {
 	rootdir := defaultRootPath()
 	publicdir := path.Join(rootdir, defaultPubicDir)
@@ -111,14 +112,14 @@ func defaultConfig() *WebConfig {
 	return conf
 }
 
-// DefaultConfig return web config with default value
+// NewDefaultConfig return *WebConfig with default value
 func NewDefaultConfig() *WebConfig {
 	conf := defaultConfig()
 	conf.init()
 	return conf
 }
 
-// defaultRootPath return default root of web application
+// ReadDefaultConfigFile parse default config file and return *WebConfig
 func ReadDefaultConfigFile() (conf *WebConfig, err error) {
 	root := defaultRootPath()
 	if root == "" {
@@ -150,7 +151,7 @@ func defaultRootPath() string {
 	return path.Dir(os.Args[0])
 }
 
-// configFromFile can read config value from a file
+// ConfigFromFile parse file and return *WebConfig
 func ConfigFromFile(file string) (conf *WebConfig, err error) {
 	if !isFileExists(file) {
 		err = errors.New("file is not exist:" + file)

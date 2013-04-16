@@ -1,7 +1,7 @@
 wk
 =====
 
-wk is a smart &amp; lightweight web server engine in golang  
+wk is a smart &amp; lightweight web server engine in Go   
 wk is webkit for web server  
 wk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wikipedia.org/wiki/Sun_Wukong)   
 
@@ -12,13 +12,13 @@ Roadmap
 * 0.1 fork gomvc, refactoring. april 2013  
 * 0.2 configration framework. april 2013  
 * 0.3 web api server. april 2013  
-* 0.4 view engine. may 2013  
-* 0.5 move to go 1.1. june 2013  
-* 0.6 more example. july 2013  
-* 0.7 cookie, session 
-* 0.8 file  
-* 0.9 custome error & 404 page
+* 0.4 test on go 1.1. may 2013  
+* 0.5 view engine. may 2013  
+* 0.6 cookie, session. july 2013 (any suggestions for go in-memory cache package ?)   
+* 0.7 watch & load config      
+* 0.8 custome error & 404 page  
 * 1.0 go  
+* 1.x    
 
 Requirements
 ---
@@ -34,8 +34,7 @@ go get github.com/sdming/wk
 
 Document
 ---
-
-Take time to translate document to english.  
+english is bad, take time to translate documents to english.  
 
 
 
@@ -47,7 +46,7 @@ Getting Started
 	server, err := wk.NewDefaultServer()
 
 	if err != nil {
-		fmt.Println("DefaultServer error", err)
+		fmt.Println("NewDefaultServer error", err)
 		return
 	}
 
@@ -78,7 +77,7 @@ HttpResult know how to write http.Response
 	}
 
 
-The handle lifecyle is 
+The lifecyle is 
 
 1. receive request, create HttpContext   
 3. run each HttpProcessor  
@@ -183,7 +182,7 @@ Go cann't get parameter name of function by reflect, so it's a littel tricky to 
 Controller  
 ---
 
-Route url like "/demo/{action}" to T, call it's method by named ({action}).     
+Route url like "/demo/{action}" to T, call it's method by named {action}.     
 
 Current version only support method of type (*HttpContext) (result HttpResult, error)  
 
@@ -318,15 +317,37 @@ Example
 ---
 
 TODO:  
-* basic example  
-* rest api example  
-* customer result  
-* customer processor  
-* customer formatter 
-* return file stream  
-* BigPipe example  
-* gzip  
+* 	basic example  
+	run default http server   
+	file: ./demo/basic/basic.go  
 
+* 	rest api example  
+	run rest http api server  
+	file: ./demo/api/rest.go  
+
+* 	httpresult example  
+	how to write a httpresult and convert text to qrcode image   
+	file: ./demo/basic/model/qr.go  
+
+*	event example
+	how to listen events 
+	file: ./demo/basic/model/event.go  
+
+* 	customer processor  
+	how to register a Processor to compress http response
+	file: ./compress.go (some bugs)  
+
+* 	file stream  example
+	how to return a file stream  
+	file: ./demo/basic/model/file.go  
+
+	how to bundling several js files into one file
+	file: ./demo/basic/model/file.go  	
+	
+* 	BigPipe example
+	how to simulate BigPipe & comet 
+	file: ./demo/basic/model/bigpipe.go (need fix bug?)   
+ 
 ORM
 ---
 Maybe, maybe not. don't have a plan yet. focus on web server.    
@@ -349,6 +370,7 @@ change log
 * kick off
 * fork gomvc, refactoring
 * configration framework
+* rest server    
 
 Contributing
 ---

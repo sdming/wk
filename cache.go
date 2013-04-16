@@ -3,14 +3,19 @@
 
 package wk
 
+import (
+	"time"
+)
+
+// Cacher is interface that wraps cache methods
 type Cacher interface {
 
-	// Get cached item from cache
+	// Get return cached data by key
 	Get(key string) ([]byte, error)
 
-	// add or update cache item, expiration in ms
-	Set(key string, value interface{}, expiration int) error
+	// Set add data to cache or update cached data by key
+	Set(key string, value interface{}, expiration time.Duration) error
 
-	// remove item from cache
+	// Remove remove cached data from cache
 	Remove(key string) error
 }

@@ -3,11 +3,11 @@
 
 package wk
 
-// VoidResult
+// VoidResult represents a result that doesn't do anything
 type VoidResult struct {
 }
 
 // Execute
 func (r *VoidResult) Execute(ctx *HttpContext) {
-	ctx.Resonse.Write([]byte(``))
+	//ctx.Resonse.Write([]byte(``))
 }

@@ -13,13 +13,14 @@ import (
 	"strings"
 )
 
-// Route is collection of RouteRule
+// RouteTable is collection of RouteRule
 type RouteTable struct {
 	Routes []*RouteRule
 }
 
 //type RouteTable  []*RouteRule
 
+// addRouteRule
 func (r *RouteTable) addRouteRule(method, path string) *RouteRule {
 	rule, err := NewRouteRule(method, path)
 	if err != nil {
@@ -29,32 +30,32 @@ func (r *RouteTable) addRouteRule(method, path string) *RouteRule {
 	return rule
 }
 
-// Get match HttpVerbsGet
+// Get match Get & HttpVerbs
 func (r *RouteTable) Get(path string) *RouteRule {
 	return r.addRouteRule(HttpVerbsGet, path)
 }
 
-// Put match HttpVerbsPut
+// Put match Put & HttpVerbs
 func (r *RouteTable) Put(path string) *RouteRule {
 	return r.addRouteRule(HttpVerbsPut, path)
 }
 
-// Post match HttpVerbsPost
+// Post match Post & path
 func (r *RouteTable) Post(path string) *RouteRule {
 	return r.addRouteRule(HttpVerbsPost, path)
 }
 
-// Delete match HttpVerbsDelete
+// Delete match Delete & path
 func (r *RouteTable) Delete(path string) *RouteRule {
 	return r.addRouteRule(HttpVerbsDelete, path)
 }
 
-// Path match any http method
+// Path match path
 func (r *RouteTable) Path(path string) *RouteRule {
 	return r.addRouteRule(_any, path)
 }
 
-// Add a RouteRule
+// Add apend a *RouteRule to RouteTable
 func (r *RouteTable) Add(rule *RouteRule) error {
 	exp, err := pathexp.Compile(rule.Pattern)
 	if err != nil {
@@ -66,7 +67,7 @@ func (r *RouteTable) Add(rule *RouteRule) error {
 	return nil
 }
 
-// Match return matched rule and route data
+// Match return matched *RouteRule and route data
 func (r *RouteTable) Match(ctx *HttpContext) (rule *RouteRule, data map[string]string, ok bool) {
 	if r == nil || r.Routes == nil || len(r.Routes) == 0 {
 		return
@@ -82,13 +83,14 @@ func (r *RouteTable) Match(ctx *HttpContext) (rule *RouteRule, data map[string]s
 	return
 }
 
+// newRouteTable
 func newRouteTable() *RouteTable {
 	return &RouteTable{
 		Routes: make([]*RouteRule, 0, 101),
 	}
 }
 
-// RouteRule is rule of route 
+// RouteRule is set of route rule & handler
 type RouteRule struct {
 
 	// Methos is http method of request
@@ -103,11 +105,12 @@ type RouteRule struct {
 	pathex *pathexp.Pathex
 }
 
+// String
 func (r *RouteRule) String() string {
 	return fmt.Sprint(r.Method, " ", r.Pattern, " handle by ", reflect.TypeOf(r.Handler))
 }
 
-// match 
+// Match return (route data,true) if matched, or (nil, false) if not
 func (r *RouteRule) Match(ctx *HttpContext) (data map[string]string, ok bool) {
 	if ctx.Method != r.Method && r.Method != _any && r.Method != "" && !(ctx.Method == HttpVerbsHead && r.Method == HttpVerbsGet) {
 		return
@@ -127,6 +130,7 @@ func (r *RouteRule) Match(ctx *HttpContext) (data map[string]string, ok bool) {
 	return
 }
 
+// NewRouteRule return *RouteRule
 func NewRouteRule(method, path string) (rule *RouteRule, err error) {
 	var exp *pathexp.Pathex
 	exp, err = pathexp.Compile(path)
@@ -142,22 +146,17 @@ func NewRouteRule(method, path string) (rule *RouteRule, err error) {
 	return
 }
 
-// To map path to handle
+// HandleBy route reuqest to handler
 func (r *RouteRule) HandleBy(handler Handler) {
 	r.Handler = handler
 }
 
-// To map path to handle
+// To route reuqest to a function func(*HttpContext) (HttpResult, error)
 func (r *RouteRule) To(handler func(*HttpContext) (HttpResult, error)) {
 	r.Handler = RouteFunc(handler)
 }
 
-// // To map path to handle
-// func (r *RouteRule) ToMethod(method reflect.MethodValue) {
-// 	return
-// }
-
-// To map path to handle
+// ToFunc route reuqest to a function
 func (r *RouteRule) ToFunc(function interface{}) *FuncServer {
 	fv := reflect.ValueOf(function)
 	handler := &FuncServer{
@@ -168,27 +167,29 @@ func (r *RouteRule) ToFunc(function interface{}) *FuncServer {
 	return handler
 }
 
-// To map path to Controller
+// ToController route request to an Controller
 func (r *RouteRule) ToController(controller interface{}) *Controller {
 	handler, _ := newController(controller)
 	r.Handler = handler
 	return handler
 }
 
-// RouteProcessor 
+// RouteProcessor route request to handler
 type RouteProcessor struct {
 	server *HttpServer
 }
 
+// newRouteProcessor
 func newRouteProcessor() *RouteProcessor {
 	return &RouteProcessor{}
 }
 
+// Register 
 func (r *RouteProcessor) Register(server *HttpServer) {
 	r.server = server
 }
 
-// Execute 
+// Execute find matched RouteRule and call it's Handler 
 func (r *RouteProcessor) Execute(ctx *HttpContext) {
 	if ctx.Result != nil {
 		return
@@ -210,7 +211,7 @@ func (r *RouteProcessor) Execute(ctx *HttpContext) {
 
 }
 
-// FuncServer TODO:
+// FuncServer is wrap of route handle function
 type FuncServer struct {
 	Binder    func(*HttpContext) ([]reflect.Value, error)
 	Func      interface{}
@@ -218,25 +219,25 @@ type FuncServer struct {
 	Formatter FormatFunc
 }
 
-// 
+// ReturnXml format result as Xml 
 func (f *FuncServer) ReturnXml() *FuncServer {
 	f.Formatter = formatXml
 	return f
 }
 
-// 
+// ReturnJson format result as Json
 func (f *FuncServer) ReturnJson() *FuncServer {
 	f.Formatter = formatJson
 	return f
 }
 
-// 
+// Return format result by FormatFunc
 func (f *FuncServer) Return(fn FormatFunc) *FuncServer {
 	f.Formatter = fn
 	return f
 }
 
-// BindByIndex TODO:
+// BindByIndex create function parameters from p1,p2,p3... 
 func (f *FuncServer) BindByIndex() {
 	binder := newIndexBinder(f.funcValue)
 
@@ -245,7 +246,7 @@ func (f *FuncServer) BindByIndex() {
 	}
 }
 
-// BindByNames TODO:
+// BindByNames create function parameters from name
 func (f *FuncServer) BindByNames(name ...string) {
 	binder := newNamedBinder(name[:], f.funcValue)
 
@@ -254,7 +255,7 @@ func (f *FuncServer) BindByNames(name ...string) {
 	}
 }
 
-// BindToStruct TODO:
+// BindToStruct create struct parameters 
 func (f *FuncServer) BindToStruct() {
 	binder := newStructBinder(f.funcValue)
 
@@ -263,10 +264,12 @@ func (f *FuncServer) BindToStruct() {
 	}
 }
 
+// structBinder
 type structBinder struct {
 	method *gotype.MethodInfo
 }
 
+// newStructBinder
 func newStructBinder(fv reflect.Value) *structBinder {
 	method := gotype.GetMethodInfoByValue(fv)
 
@@ -275,6 +278,7 @@ func newStructBinder(fv reflect.Value) *structBinder {
 	}
 }
 
+// Bind
 func (binder *structBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	numIn := binder.method.NumIn
 	args := make([]reflect.Value, numIn, numIn)
@@ -326,11 +330,13 @@ func (binder *structBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	return args, nil
 }
 
+// namedBinder
 type namedBinder struct {
 	method  *gotype.MethodInfo
 	argsMap []string
 }
 
+// newNamedBinder
 func newNamedBinder(args []string, fv reflect.Value) *namedBinder {
 	method := gotype.GetMethodInfoByValue(fv)
 
@@ -340,6 +346,7 @@ func newNamedBinder(args []string, fv reflect.Value) *namedBinder {
 	}
 }
 
+// Bind
 func (binder *namedBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	numIn := binder.method.NumIn
 
@@ -370,10 +377,12 @@ func (binder *namedBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	return args, nil
 }
 
+// indexBinder
 type indexBinder struct {
 	method *gotype.MethodInfo
 }
 
+// newIndexBinder
 func newIndexBinder(fv reflect.Value) *indexBinder {
 	method := gotype.GetMethodInfoByValue(fv)
 	return &indexBinder{
@@ -381,6 +390,7 @@ func newIndexBinder(fv reflect.Value) *indexBinder {
 	}
 }
 
+// Bind
 func (binder *indexBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	numIn := binder.method.NumIn
 	args := make([]reflect.Value, numIn, numIn)
@@ -407,6 +417,7 @@ func (binder *indexBinder) Bind(ctx *HttpContext) ([]reflect.Value, error) {
 	return args, nil
 }
 
+// Execute call function through reflect
 func (f *FuncServer) Execute(ctx *HttpContext) {
 	if f.Binder == nil {
 		f.BindByIndex()
@@ -443,8 +454,10 @@ func (f *FuncServer) Execute(ctx *HttpContext) {
 	ctx.Result = convertResult(ctx, result[0])
 }
 
+// RouteFunc is wrap of func(*HttpContext) (HttpResult, error)
 type RouteFunc func(*HttpContext) (HttpResult, error)
 
+// Execute
 func (f RouteFunc) Execute(ctx *HttpContext) {
 	result, err := f(ctx)
 	if err != nil {
@@ -453,11 +466,3 @@ func (f RouteFunc) Execute(ctx *HttpContext) {
 	}
 	ctx.Result = result
 }
-
-/*
-map
-	1: pa,p2,p3
-	2:["a","b","c"]
-
-H(httpcontext) httpresult, error
-*/

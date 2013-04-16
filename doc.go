@@ -2,9 +2,9 @@
 // license that can be found in the LICENSE file.
 
 /*
-go mvc web framework
+go web server engine
 
-add detail english document later
+english is bad, take time to translte
 
 */
 

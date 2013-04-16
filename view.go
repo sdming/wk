@@ -3,11 +3,11 @@
 
 package wk
 
-// // ViewResult
-// type ViewResult struct {
-// }
+// ViewResult
+type ViewResult struct {
+}
 
-// // Execute
-// func (j *ViewResult) Execute(ctx *HttpContext) {
-// 	panic("TODO:ViewResult")
-// }
+// Execute
+func (j *ViewResult) Execute(ctx *HttpContext) {
+	panic("TODO:ViewResult")
+}

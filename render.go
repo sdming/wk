@@ -5,20 +5,22 @@ package wk
 
 import ()
 
-// RenderProcessor rende http result to client
+// RenderProcessor render http result
 type RenderProcessor struct {
 	server *HttpServer
 }
 
+// newRenderProcessor
 func newRenderProcessor() *RenderProcessor {
 	return &RenderProcessor{}
 }
 
+// Register
 func (p *RenderProcessor) Register(server *HttpServer) {
 	p.server = server
 }
 
-// Execute rende result to client
+// Execute render http result to response
 func (p *RenderProcessor) Execute(ctx *HttpContext) {
 
 	if ctx.Result == nil {
@@ -30,7 +32,7 @@ func (p *RenderProcessor) Execute(ctx *HttpContext) {
 	}
 
 	if ctx.Result == nil {
-		ctx.Result = errNoResult
+		ctx.Result = resultNotFound
 	}
 
 	p.server.Fire(_render, _eventStartResultExecute, p, nil, ctx)

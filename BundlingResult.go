@@ -1,10 +1,8 @@
 // Copyright 2012 by sdm. All rights reserved.
 // license that can be found in the LICENSE file.
 
-package api
+package wk
 
-type ApiResult struct {
-	Code    string
-	Message string
-	Data    interface{}
+// BundleResult is bundle of files
+type BundleResult struct {
 }

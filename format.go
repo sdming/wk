@@ -5,25 +5,25 @@ package wk
 
 import ()
 
-// 
+// FormatList
 type FormatList []FormatFunc
 
-// return false if can not format data
+// FormatFunc return formatted HttpResult or return (nil, false) if doesn't format it
 type FormatFunc func(*HttpContext, interface{}) (HttpResult, bool)
 
-// Append add a FormatFunc 
+// Append register a FormatFunc 
 func (f *FormatList) Append(fn FormatFunc) {
 	*f = append(*f, fn)
 }
 
-// Remove a FormatFunc
+// Remove unregister FormatFunc
 func (f *FormatList) Remove(fn FormatFunc) {
 	panic("TODO:")
 }
 
-var Formatter FormatList
+var Formatters FormatList
 
 //
 func init() {
-	Formatter = make([]FormatFunc, 0)
+	Formatters = make([]FormatFunc, 0)
 }

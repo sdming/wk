@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-// http server
+// HttpServer
 type HttpServer struct {
 	// config
 	Config *WebConfig
@@ -43,9 +43,6 @@ type HttpServer struct {
 
 // Fire can fire a event
 func (srv *HttpServer) Fire(moudle, name string, source, data interface{}, context *HttpContext) {
-	if LogLevel >= LogInfo {
-		Logger.Println("fire event", moudle, name)
-	}
 
 	var e *EventContext
 
@@ -66,7 +63,7 @@ func (srv *HttpServer) Fire(moudle, name string, source, data interface{}, conte
 	}
 }
 
-// DefaultServer create a http server with default config
+// DefaultServer return a http server with default config
 func NewDefaultServer() (srv *HttpServer, err error) {
 	var conf *WebConfig
 
@@ -78,7 +75,7 @@ func NewDefaultServer() (srv *HttpServer, err error) {
 	return NewHttpServer(conf)
 }
 
-// NewHttpServer create a http server with config 
+// NewHttpServer return a http server with provided config 
 func NewHttpServer(config *WebConfig) (srv *HttpServer, err error) {
 	srv = &HttpServer{
 		Config: config,
@@ -87,6 +84,28 @@ func NewHttpServer(config *WebConfig) (srv *HttpServer, err error) {
 	return srv, nil
 }
 
+// // NewWebApiServer create a rest api server
+// func NewWebApiServer(config *WebConfig) (srv *HttpServer, err error) {
+// 	srv = &HttpServer{
+// 		Config: config,
+// 	}
+// 	srv.Variables = make(map[string]interface{})
+// 	srv.RouteTable = newRouteTable()
+
+// 	l := len(Processes)
+// 	srv.Processes = make([]*Process, l)
+// 	for i := 0; i < l; i++ {
+// 		if Processes[i].Name == _static {
+// 			continue
+// 		}
+// 		Processes[i].Handler.Register(srv)
+// 		srv.Processes[i] = Processes[i]
+// 	}
+
+// 	return srv, nil
+// }
+
+// init
 func (srv *HttpServer) init() error {
 	srv.Variables = make(map[string]interface{})
 	srv.RouteTable = newRouteTable()
@@ -102,6 +121,7 @@ func (srv *HttpServer) init() error {
 	return nil
 }
 
+// listenAndServe
 func (srv *HttpServer) listenAndServe() (err error) {
 	// if srv.Listener, err = net.Listen("tcp", srv.Config.Address); err != nil {
 	// 	return err
@@ -133,7 +153,7 @@ func (srv *HttpServer) error(ctx *HttpContext, err error) {
 	}
 }
 
-// Start can start server instance and serve request
+// Start start server instance and listent request
 func (srv *HttpServer) Start() (err error) {
 
 	if Logger == nil {
@@ -147,6 +167,14 @@ func (srv *HttpServer) Start() (err error) {
 		"\n\t PublicDir:", srv.Config.PublicDir,
 	)
 
+	if len(srv.Processes) == 0 {
+		return errors.New("server processes is empty")
+	}
+
+	for _, p := range srv.Processes {
+		Logger.Println("process", p.Method, p.Path, p.Name)
+	}
+
 	if err = srv.listenAndServe(); err != nil {
 		Logger.Println("http server server fail:", err)
 		return
@@ -156,7 +184,7 @@ func (srv *HttpServer) Start() (err error) {
 	return nil
 }
 
-// // Close can close http server
+// // Close stop listen and close http server
 // func (s *HttpServer) Close() error {
 // 	Logger.Println("http server is closing")
 
@@ -202,6 +230,7 @@ func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// doServer
 func (srv *HttpServer) doServer(ctx *HttpContext) {
 
 	ctx.SetHeader(HeaderServer, _serverName)
@@ -224,7 +253,7 @@ func (s *HttpServer) buildContext(w http.ResponseWriter, r *http.Request) *HttpC
 	}
 }
 
-// execute process
+// exeProcess execute all HttpProcessor
 func (srv *HttpServer) exeProcess(ctx *HttpContext, p *Process) (err error) {
 
 	if LogLevel >= LogDebug {

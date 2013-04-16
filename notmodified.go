@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// NotModifiedResult
+// NotModifiedResult is wrap of http.StatusNotModified
 type NotModifiedResult struct {
 }
 

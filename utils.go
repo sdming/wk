@@ -32,7 +32,7 @@ func isDirExists(path string) bool {
 	return false
 }
 
-// Return the canonical path for p, eliminating . and .. elements.
+// cleanPath return the canonical path for p, eliminating . and .. elements.
 func cleanPath(p string) string {
 	if p == "" {
 		return "/"
@@ -49,7 +49,7 @@ func cleanPath(p string) string {
 	return np
 }
 
-// returns the name of the calling method, Caller(N)
+// methodNameN returns the name of the calling method, Caller(N)
 func methodNameN(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	f := runtime.FuncForPC(pc)
@@ -61,6 +61,7 @@ func methodNameN(skip int) string {
 
 const formatTime = "Mon, 02 Jan 2006 15:04:05 GMT"
 
+// webTime return formated time.Time
 func webTime(t time.Time) string {
 	return t.Format(formatTime)
 }
@@ -130,8 +131,8 @@ func convertResult(ctx *HttpContext, v reflect.Value) HttpResult {
 		return r
 	}
 
-	if Formatter != nil {
-		for _, f := range Formatter {
+	if Formatters != nil {
+		for _, f := range Formatters {
 			if formatted, ok := f(ctx, v.Interface()); ok {
 				return formatted
 			}

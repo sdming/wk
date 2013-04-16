@@ -9,14 +9,16 @@ import (
 	"strings"
 )
 
-// ActionSubscriber  
+// ActionSubscriber is interface that subscrib controller events
 type ActionSubscriber interface {
 	OnActionExecuting(action *ActionContext)
 	OnActionExecuted(action *ActionContext)
 	OnException(action *ActionContext)
 }
 
+// ActionContext is data that pass to ActionSubscriber 
 type ActionContext struct {
+	// Name is action method name
 	Name       string
 	Context    *HttpContext
 	Controller reflect.Value
@@ -24,24 +26,23 @@ type ActionContext struct {
 	Err        error
 }
 
-// controller
+// Controller is wrap of controller handler
 type Controller struct {
 
 	// Handler
 	Handler reflect.Value
 
-	//Methods cache method reflect info 
+	//Methods is cache of method reflect info 
 	Methods map[string]*gotype.MethodInfo
 
-	//Binder Binder
-
-	// ActionSubscriber 
+	// actionSubscriber 
 	actionSubscriber ActionSubscriber
 
 	//server
 	server *HttpServer
 }
 
+// newController 
 func newController(x interface{}) (c *Controller, err error) {
 
 	handler := reflect.ValueOf(x)
@@ -96,11 +97,12 @@ func (c *Controller) findAction(ctx *HttpContext) (method *gotype.MethodInfo, er
 	return
 }
 
+// Execute call action method
 func (c *Controller) Execute(ctx *HttpContext) {
 	ctx.Result, ctx.Error = c.invoke(ctx)
 }
 
-// 
+// invoke
 func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 	method, err := c.findAction(ctx)
 	if err != nil {

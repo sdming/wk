@@ -15,20 +15,20 @@ var (
 	// internal error
 	errInternalError = errors.New(msgServerInternalErr)
 
-	// errNoaction mean can not find actionin controller
+	// can not find actionin method
 	errNoAction = errors.New(msgNoAction)
 
-	// errNoResult mean httpcontext result is nil
+	// httpresult is nil
 	errNoResult = &ErrorResult{
 		Err: errors.New(msgNoResult),
 	}
 )
 
 var (
-	// ResultVoid mean action did not return a result
+	// action did not return a result
 	resultVoid = &VoidResult{}
 
-	// resultNotFound mean can not find result
+	// httpresult is nil
 	resultNotFound = &NotFoundResult{}
 
 	// no result
@@ -45,19 +45,6 @@ var (
 	// EnableProfile mean enable http profile or not
 	EnableProfile bool = false
 )
-
-type ServerError struct {
-	Message string
-	Module  string
-}
-
-func (se *ServerError) Error() string {
-	return se.Module + ":" + se.Message
-}
-
-// type Text interface {
-// 	Text() ([]byte, error)
-// }
 
 type Handler interface {
 	Execute(*HttpContext)

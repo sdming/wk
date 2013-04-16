@@ -9,6 +9,7 @@ type JsonpResult struct {
 }
 
 // Execute
+// Content-Type is application/javascript
 func (j *JsonpResult) Execute(ctx *HttpContext) {
 	panic("TODO:JsonpResult")
 }

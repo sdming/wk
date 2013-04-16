@@ -7,27 +7,28 @@ import (
 	"strings"
 )
 
-// HttpProcessor handle request and build HttpResult(maybe)
+// HttpProcessor is interface that handle http request
 type HttpProcessor interface {
 	// Execute handle request
 	Execute(ctx *HttpContext)
 
-	// Register is called once when create a new server
+	// Register is called once when create a new HttpServer
 	Register(server *HttpServer)
 }
 
-// HttpHandler item
+// Process is wrap of HttpProcessor
 type Process struct {
-	// name
+	// Name
 	Name string
 
-	// path to match (prefix, / or empty to match all)    
+	// Path is url to match, / or empty to match all
+	// change to regex? containers muti ?   
 	Path string
 
-	// method to match (* or empty to match all)
+	// Method is http method to match, * or empty to match all
 	Method string //http method
 
-	// handler  
+	// Handler is the HttpProcessor
 	Handler HttpProcessor
 }
 
@@ -42,33 +43,60 @@ func (p *Process) match(ctx *HttpContext) bool {
 	return false
 }
 
-// ProcessTable
+// ProcessTable is alias of []*Process
 type ProcessTable []*Process
 
-// Append add a process at end
+// Append add a *Process at end
 func (pt *ProcessTable) Append(p *Process) {
 	*pt = append(*pt, p)
 }
 
-// Insert add a process at index
-func (pt *ProcessTable) Insert(p *Process, index int) {
-	panic ("TODO:")
-}
-
-// Remove delet a process by name
-func (pt *ProcessTable) Remove(name string) {
+// InsertBefore add a *Process before name
+func (pt *ProcessTable) InsertBefore(name string, p *Process) {
 	for i := 0; i < len(*pt); {
 		if (*pt)[i].Name == name {
-			*pt = append((*pt)[:i], (*pt)[i+1:]...)
+			*pt = append(*pt, p)
+			copy((*pt)[i+1:], (*pt)[i:])
+			(*pt)[i] = p
+			return
 		} else {
 			i++
 		}
 	}
 }
 
+// InsertAfter add a *Process after name
+func (pt *ProcessTable) InsertAfter(name string, p *Process) {
+	for i := 0; i < len(*pt); {
+		if (*pt)[i].Name == name {
+			*pt = append(*pt, p)
+			copy((*pt)[i+1:], (*pt)[i+1:])
+			(*pt)[i+1] = p
+			return
+		} else {
+			i++
+		}
+	}
+}
+
+// Remove delete a *Process from ProcessTable
+func (pt *ProcessTable) Remove(name string) {
+	for i := 0; i < len(*pt); {
+		if (*pt)[i].Name == name {
+			//*pt = append((*pt)[:i], (*pt)[i+1:]...)
+			copy((*pt)[i:], (*pt)[i+1:])
+			(*pt)[len((*pt))-1] = nil
+			(*pt) = (*pt)[:len((*pt))-1]
+		} else {
+			i++
+		}
+	}
+}
+
+// Processes is global ProcessTable configration 
 var Processes ProcessTable
 
-// init ProcessTable
+// init Processes
 func init() {
 	Processes = make([]*Process, 0, 11)
 	RegisterProcessor(_static, newStaticProcessor())
@@ -77,7 +105,7 @@ func init() {
 
 }
 
-// RegisterProcessor
+// RegisterProcessor append a HttpProcessor to global ProcessTable
 func RegisterProcessor(name string, p HttpProcessor) {
 	process := &Process{
 		Name:    name,

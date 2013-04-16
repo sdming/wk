@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// ErrorResult 
+// ErrorResult return error to client 
 type ErrorResult struct {
 	Err error
 	Tag string
@@ -22,18 +22,20 @@ func (e *ErrorResult) String() string {
 	return e.Err.Error()
 }
 
-// Error return a *ErrorResult
+// Error return *ErrorResult
 func Error(msg string) *ErrorResult {
 	return &ErrorResult{
 		Err: errors.New(msg),
 	}
 }
 
-// Execute, TODO: cutomer error view page
+// Execute write response
+// TODO: cutomer error view page
 func (e *ErrorResult) Execute(ctx *HttpContext) {
 	http.Error(ctx.Resonse, e.String(), http.StatusInternalServerError)
 }
 
+// executeErrorResult
 func executeErrorResult(ctx *HttpContext, err error) {
 	e := &ErrorResult{
 		Err: err,

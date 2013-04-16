@@ -10,8 +10,10 @@ import (
 	"strconv"
 )
 
+// RouteData is wrap of route data
 type RouteData map[string]string
 
+// Int parse route value as int 
 func (r RouteData) Int(name string) (int, bool) {
 	if s, ok := r[name]; ok {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -21,6 +23,7 @@ func (r RouteData) Int(name string) (int, bool) {
 	return 0, false
 }
 
+// Int return route value as int or v
 func (r RouteData) IntOr(name string, v int) int {
 	if s, ok := r[name]; ok {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -30,6 +33,7 @@ func (r RouteData) IntOr(name string, v int) int {
 	return v
 }
 
+// Bool parse route value as bool 
 func (r RouteData) Bool(name string) (bool, bool) {
 	if s, ok := r[name]; ok {
 		if b, err := strconv.ParseBool(s); err == nil {
@@ -39,6 +43,7 @@ func (r RouteData) Bool(name string) (bool, bool) {
 	return false, false
 }
 
+// BoolOr return route value as bool or v
 func (r RouteData) BoolOr(name string, v bool) bool {
 	if s, ok := r[name]; ok {
 		if b, err := strconv.ParseBool(s); err == nil {
@@ -48,6 +53,7 @@ func (r RouteData) BoolOr(name string, v bool) bool {
 	return v
 }
 
+// Float parse route value as float64 
 func (r RouteData) Float(name string) (float64, bool) {
 	if s, ok := r[name]; ok {
 		if f, err := strconv.ParseFloat(s, 64); err == nil {
@@ -57,6 +63,7 @@ func (r RouteData) Float(name string) (float64, bool) {
 	return 0, false
 }
 
+// FloatOr return route value as float64 or v
 func (r RouteData) FloatOr(name string, v float64) float64 {
 	if s, ok := r[name]; ok {
 		if f, err := strconv.ParseFloat(s, 64); err == nil {
@@ -66,6 +73,7 @@ func (r RouteData) FloatOr(name string, v float64) float64 {
 	return v
 }
 
+// Str return route value 
 func (r RouteData) Str(name string) (string, bool) {
 	if s, ok := r[name]; ok {
 		return s, true
@@ -73,6 +81,7 @@ func (r RouteData) Str(name string) (string, bool) {
 	return "", false
 }
 
+// Str return route value or v if name donesn't exist
 func (r RouteData) StrOr(name string, v string) string {
 	if s, ok := r[name]; ok {
 		return s
@@ -80,55 +89,57 @@ func (r RouteData) StrOr(name string, v string) string {
 	return v
 }
 
-// http context
+// HttpContext is wrap of request & response
 type HttpContext struct {
 
-	// http request 
+	// Request is *http.Request
 	Request *http.Request
 
-	// http response writer
+	// Resonse is http.ResponseWriter
 	Resonse http.ResponseWriter
 
-	// http method
-	Method string //http method
+	// Method is http method
+	Method string
 
-	// request path
+	// RequestPath is 
 	RequestPath string
 
-	// physical Path
+	// PhysicalPath is path of static file 
 	PhysicalPath string
 
-	// route data
+	// RouteData
 	RouteData RouteData
 
-	// view Data
+	// ViewData
 	ViewData map[string]interface{}
 
-	// http result    
+	// Result
 	Result HttpResult
 
-	// last error
+	// Error
 	Error error
 
-	// Flash Variables
+	// Flash is flash variables of request life cycle
 	Flash map[string]interface{}
 }
 
+// String
 func (ctx *HttpContext) String() string {
 	return fmt.Sprintf("%s %s %v %v \n;", ctx.Method, ctx.RequestPath, ctx.Result, ctx.Error)
 }
 
-// RouteValue return route data value
+// RouteValue return route value by name
 func (ctx *HttpContext) RouteValue(name string) (string, bool) {
 	v, ok := ctx.RouteData[name]
 	return v, ok
 }
 
-// FormValue alias of Request FormValue
+// FormValue is alias of Request FormValue
 func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
 }
 
+// FormInt parse form value as int
 func (ctx *HttpContext) FormInt(name string) (int, bool) {
 	if s := ctx.FormValue(name); s != "" {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -138,6 +149,7 @@ func (ctx *HttpContext) FormInt(name string) (int, bool) {
 	return 0, false
 }
 
+// FormIntOr return form value as int or v
 func (ctx *HttpContext) FormIntOr(name string, v int) int {
 	if s := ctx.FormValue(name); s != "" {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -147,6 +159,7 @@ func (ctx *HttpContext) FormIntOr(name string, v int) int {
 	return v
 }
 
+// FormBool parse form value as bool
 func (ctx *HttpContext) FormBool(name string) (bool, bool) {
 	if s := ctx.FormValue(name); s != "" {
 		if b, err := strconv.ParseBool(s); err == nil {
@@ -156,6 +169,7 @@ func (ctx *HttpContext) FormBool(name string) (bool, bool) {
 	return false, false
 }
 
+// FormBoolOr return form value as bool or v
 func (ctx *HttpContext) FormBoolOr(name string, v bool) bool {
 	if s := ctx.FormValue(name); s != "" {
 		if b, err := strconv.ParseBool(s); err == nil {
@@ -165,6 +179,7 @@ func (ctx *HttpContext) FormBoolOr(name string, v bool) bool {
 	return v
 }
 
+// FormFloat parse form value as float64
 func (ctx *HttpContext) FormFloat(name string) (float64, bool) {
 	if s := ctx.FormValue(name); s != "" {
 		if f, err := strconv.ParseFloat(s, 64); err == nil {
@@ -174,6 +189,7 @@ func (ctx *HttpContext) FormFloat(name string) (float64, bool) {
 	return 0, false
 }
 
+// FormFloatOr return form value as float64 or v
 func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
 	if s := ctx.FormValue(name); s != "" {
 		if f, err := strconv.ParseFloat(s, 64); err == nil {
@@ -188,7 +204,7 @@ func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
 // 	return ctx.Request.URL.Query()[name]
 // }
 
-// UserAgent return request User-Agent header
+// UserAgent return request header User-Agent 
 func (ctx *HttpContext) UserAgent() string {
 	return ctx.Request.Header.Get(HeaderUserAgent)
 }
@@ -208,7 +224,7 @@ func (ctx *HttpContext) AddHeader(key string, value string) {
 	ctx.Resonse.Header().Add(key, value)
 }
 
-// ContentType set response Content-Type header
+// ContentType set response header Content-Type 
 func (ctx *HttpContext) ContentType(ctype string) {
 	ctx.Resonse.Header().Set(HeaderContentType, ctype)
 }
@@ -218,17 +234,17 @@ func (ctx *HttpContext) Status(code int) {
 	ctx.Resonse.WriteHeader(code)
 }
 
-// Accept return request Accept header
+// Accept return request header Accept 
 func (ctx *HttpContext) Accept() string {
 	return ctx.Request.Header.Get(HeaderAccept)
 }
 
-// Write writes data to resposne
+// Write writes b to resposne
 func (ctx *HttpContext) Write(b []byte) (int, error) {
 	return ctx.Resonse.Write(b)
 }
 
-// Expires set reponse Expires header
+// Expires set reponse header Expires 
 func (ctx *HttpContext) Expires(t string) {
 	ctx.SetHeader(HeaderExpires, t)
 }
@@ -255,7 +271,16 @@ func (ctx *HttpContext) Flush() {
 	}
 }
 
-// SetFlash
+// GetFlash return value in Context.Flash
+func (ctx *HttpContext) GetFlash(key string) (v interface{}, ok bool) {
+	if ctx.Flash == nil {
+		return nil, false
+	}
+	v, ok = ctx.Flash[key]
+	return
+}
+
+// SetFlash set value to Context.Flash 
 func (ctx *HttpContext) SetFlash(key string, v interface{}) {
 	if ctx.Flash == nil {
 		ctx.Flash = make(map[string]interface{})
@@ -263,6 +288,7 @@ func (ctx *HttpContext) SetFlash(key string, v interface{}) {
 	ctx.Flash[key] = v
 }
 
+// ReadBody read Request.Body
 func (ctx *HttpContext) ReadBody() ([]byte, error) {
 	return ioutil.ReadAll(ctx.Request.Body)
 }

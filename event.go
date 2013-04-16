@@ -7,26 +7,27 @@ import (
 	"fmt"
 )
 
+// SubscriberFunc 
 type SubscriberFunc func(*EventContext)
 
-// The SubscriberFunc type is an adapter to Subscriber  
+// On implement Subscriber
 func (f SubscriberFunc) On(e *EventContext) {
 	f(e)
 }
 
-// Subscriber calls f(e).
+// Subscriber is interface of event listener
 type Subscriber interface {
 	On(e *EventContext)
 }
 
-// SubscriberItem is 
+// SubscriberItem is wrap of Subscriber
 type SubscriberItem struct {
 	Moudle  string
 	Name    string
 	Handler Subscriber
 }
 
-// EventContext is 
+// EventContext is the data pass to Subscriber
 type EventContext struct {
 	Moudle  string
 	Name    string
@@ -48,13 +49,11 @@ var (
 )
 
 func init() {
-
 	Subscribers = make([]*SubscriberItem, 0)
 }
 
 // On register event lister 
 func On(moudle, name string, handler Subscriber) {
-	fmt.Println("Subscribe Event On", moudle, name)
 
 	sub := &SubscriberItem{
 		Moudle:  moudle,
@@ -64,6 +63,7 @@ func On(moudle, name string, handler Subscriber) {
 	Subscribers = append(Subscribers, sub)
 }
 
+// On register event lister 
 func OnFunc(moudle, name string, handler func(*EventContext)) {
 	On(moudle, name, SubscriberFunc(handler))
 }
