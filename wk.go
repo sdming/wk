@@ -6,6 +6,7 @@ package wk
 import (
 	"errors"
 	"log"
+	"reflect"
 )
 
 var (
@@ -44,6 +45,10 @@ var (
 
 	// EnableProfile mean enable http profile or not
 	EnableProfile bool = false
+)
+
+var (
+	typeOfError = reflect.TypeOf((*error)(nil)).Elem()
 )
 
 type Handler interface {
