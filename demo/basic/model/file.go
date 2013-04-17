@@ -29,6 +29,7 @@ func FileHelloTime(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	return wk.FileStream("", "hellotime.txt", reader, time.Now()), nil
 }
 
+// TODO: close reader?
 func FileJsBundling(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	files := []string{"main.js", "plugins.js"}
 	base := "./public/js/"

@@ -16,7 +16,8 @@ Roadmap
 * 0.5 view engine. may 2013  
 * 0.6 cookie, session. july 2013 (any suggestions for go in-memory cache package ?)   
 * 0.7 watch & load config      
-* 0.8 custome error & 404 page  
+* 0.8 custome error & 404 page 
+* 0.9 file upload    
 * 1.0 go  
 * 1.x    
 
@@ -326,27 +327,27 @@ TODO:
 	file: ./demo/api/rest.go  
 
 * 	httpresult example  
-	how to write a httpresult and convert text to qrcode image   
+	how to write a http result to return qrcode image   
 	file: ./demo/basic/model/qr.go  
 
-*	event example
-	how to listen events 
-	file: ./demo/basic/model/event.go  
+*	event example  
+	how to listen events   
+	file: ./demo/basic/model/event.go    
 
-* 	customer processor  
-	how to register a Processor to compress http response
+* 	custom processor  
+	how to register a Processor to compress http response  
 	file: ./compress.go (some bugs)  
 
-* 	file stream  example
-	how to return a file stream  
+* 	file stream  example  
+	how to return a file stream    
 	file: ./demo/basic/model/file.go  
 
 	how to bundling several js files into one file
 	file: ./demo/basic/model/file.go  	
 	
-* 	BigPipe example
-	how to simulate BigPipe & comet 
-	file: ./demo/basic/model/bigpipe.go (need fix bug?)   
+* 	BigPipe example  
+	how to simulate BigPipe & comet   
+	file: ./demo/basic/model/bigpipe.go (need fix bug?)     
  
 ORM
 ---
