@@ -79,6 +79,7 @@ const (
 	_notFoundAction = "noaction"
 	_defaultAction  = "default"
 	_serverName     = "go web server "
+	_version        = "0.4"
 )
 
 const (

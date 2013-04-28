@@ -39,6 +39,8 @@ type HttpServer struct {
 
 	//server variables
 	Variables map[string]interface{}
+
+	// 
 }
 
 // Fire can fire a event
@@ -157,7 +159,7 @@ func (srv *HttpServer) error(ctx *HttpContext, err error) {
 func (srv *HttpServer) Start() (err error) {
 
 	if Logger == nil {
-		Logger = log.New(os.Stdout, _serverName, log.Ldate|log.Ltime)
+		Logger = log.New(os.Stdout, _serverName+_version, log.Ldate|log.Ltime)
 	}
 	Logger.Println("http server is starting")
 
@@ -166,6 +168,10 @@ func (srv *HttpServer) Start() (err error) {
 		"\n\t ConfigDir:", srv.Config.ConfigDir,
 		"\n\t PublicDir:", srv.Config.PublicDir,
 	)
+
+	if err = srv.configSession(); err != nil {
+		return
+	}
 
 	if len(srv.Processes) == 0 {
 		return errors.New("server processes is empty")
@@ -234,6 +240,7 @@ func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (srv *HttpServer) doServer(ctx *HttpContext) {
 
 	ctx.SetHeader(HeaderServer, _serverName)
+	srv.exeSession(ctx)
 
 	for _, h := range srv.Processes {
 		if h.match(ctx) {

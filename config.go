@@ -21,6 +21,9 @@ const (
 	// defaultConfigDir is default directory of config files
 	defaultConfigDir string = "conf"
 
+	// defaultReadTimeout
+	defaultReadTimeout int = 30
+
 	// appConfigFile is default filename of app coinfig
 	appConfigFile string = "app.conf"
 
@@ -29,6 +32,12 @@ const (
 
 	// pluginConfigFile is default file name of plugin coinfig
 	pluginConfigFile string = "plugin.conf"
+
+	// defaultSessionTimeout is default value of SessionTimeout
+	defaultSessionTimeout int = 20 * 60
+
+	// defaultSessionDriver is the name of default session driver 
+	defaultSessionDriver string = "default"
 )
 
 // WebConfig is configuration of go web server
@@ -65,6 +74,15 @@ type WebConfig struct {
 
 	// MaxHeaderBytes is maximum size of request headers
 	MaxHeaderBytes int
+
+	// SessionEnable is true if enable session
+	SessionEnable bool
+
+	// SessionTimeout, session timeout in second
+	SessionTimeout int
+
+	// SessionDriver is the name of driver
+	SessionDriver string
 }
 
 // String 
@@ -103,10 +121,14 @@ func defaultConfig() *WebConfig {
 	confdir := path.Join(rootdir, defaultConfigDir)
 
 	conf := &WebConfig{
-		Address:   defaultAddress,
-		RootDir:   rootdir,
-		PublicDir: publicdir,
-		ConfigDir: confdir,
+		Address:        defaultAddress,
+		RootDir:        rootdir,
+		PublicDir:      publicdir,
+		ConfigDir:      confdir,
+		ReadTimeout:    defaultReadTimeout,
+		SessionEnable:  false,
+		SessionTimeout: defaultSessionTimeout,
+		SessionDriver:  defaultSessionDriver,
 	}
 
 	return conf

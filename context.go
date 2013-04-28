@@ -121,6 +121,9 @@ type HttpContext struct {
 
 	// Flash is flash variables of request life cycle
 	Flash map[string]interface{}
+
+	// Session
+	Session Session
 }
 
 // String
@@ -257,6 +260,11 @@ func (ctx *HttpContext) SetCookie(cookie *http.Cookie) {
 // Cookie return cookie from request
 func (ctx *HttpContext) Cookie(name string) (*http.Cookie, error) {
 	return ctx.Request.Cookie(name)
+}
+
+// SessionId return sessionid of current context
+func (ctx *HttpContext) SessionId() string {
+	return string(ctx.Session)
 }
 
 // Flush flush response immediately
