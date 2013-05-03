@@ -1,4 +1,4 @@
-package test
+package wk_test
 
 import (
 	"github.com/sdming/wk"

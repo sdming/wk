@@ -1,6 +1,7 @@
-package test
+package wk_test
 
 import (
+	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk"
 	"testing"
 )
@@ -49,6 +50,10 @@ func TestConfig(t *testing.T) {
 	Equal(t, "ReadTimeout", 1021, conf.ReadTimeout)
 	Equal(t, "WriteTimeout", 1022, conf.WriteTimeout)
 	Equal(t, "MaxHeaderBytes", 1023, conf.MaxHeaderBytes)
+
+	Equal(t, "SessionEnable", true, conf.SessionEnable)
+	Equal(t, "SessionTimeout", 3600, conf.SessionTimeout)
+	Equal(t, "SessionDriver", "session_default", conf.SessionDriver)
 
 	if v, err := conf.AppConfig.MustChild("key_string").String(); err != nil {
 		t.Errorf("app config %s error %v", "key_string", err)
@@ -104,4 +109,40 @@ func TestConfig(t *testing.T) {
 	} else {
 		t.Logf("%#v", c)
 	}
+}
+
+type Option struct {
+	Int     int
+	String  string
+	Float64 float64
+	Bool    bool
+	Map     map[string]string
+}
+
+func TestPluginConfig(t *testing.T) {
+	conf, err := wk.ReadDefaultConfigFile()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	node := conf.PluginConfig.MustChild("session_debug")
+	dump := node.Dump()
+	t.Log("session_debug", dump)
+
+	option := &Option{}
+	kson.Unmarshal([]byte(dump), option)
+
+	if err := conf.PluginConfig.MustChild("session_debug").Value(option); err != nil {
+		t.Errorf("plugin config %s error %v", "session_debug", err)
+	} else {
+		Equal(t, "session_debug.Driver", 1024, option.Int)
+		Equal(t, "session_debug.String", "string demo", option.String)
+		Equal(t, "session_debug.Float32", 3.14, option.Float64)
+		Equal(t, "session_debug.Bool", true, option.Bool)
+		Equal(t, "session_debug.Map.key1", "key1 value", option.Map["key1"])
+		Equal(t, "session_debug.Map.key2", "key2 value", option.Map["key2"])
+	}
+
 }

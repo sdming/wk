@@ -24,6 +24,16 @@ func NewDemoController() *DemoController {
 	}
 }
 
+var demo *DemoController
+
+func RegisterDemoRoute(server *wk.HttpServer) {
+	demo = NewDemoController()
+
+	// url: /demo/xxx/xxx
+	// route to controller
+	server.RouteTable.Path("/demo/{action}/{id}").ToController(demo)
+}
+
 func (c *DemoController) deleteByInt(v int) {
 	for i := 0; i < len(c.data); {
 		if c.data[i].Int == v {

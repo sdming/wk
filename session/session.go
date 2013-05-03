@@ -55,50 +55,10 @@ type Driver interface {
 	Keys(sessionId string) ([]string, error)
 }
 
-/*
-
-
-1: register
-2: plugin.conf -- configable
-3: web.conf -- type? off ??
-4: debug -- 
-
-
-web.conf
-
-session_enable
-session_timeout
-session_mode
-
-*/
-
 type Session struct {
 	CreateAt time.Time
 	Id       string
 }
-
-// session enable
-//参数设置？？
-//Expire 过期？？
-//IsNewSession	获取一个值，该值指示会话是否是与当前请求一起创建的。
-//SessionID
-//timeout
-
-// Add,
-
-// <sessionState
-//   Mode="InProc"
-//   stateConnectionString="tcp=127.0.0.1:42424"
-//   stateNetworkTimeout="10"
-//   sqlConnectionString="data source=127.0.0.1;Integrated Security=SSPI"
-//   sqlCommandTimeout="30"
-//   customProvider=""
-//   cookieless="false"
-//   regenerateExpiredSessionId="false"
-//   timeout="20"
-//   sessionIDManagerType="Your.ID.Manager.Type,
-//     CustomAssemblyNameInBinFolder"
-// />
 
 var drivers map[string]Driver = make(map[string]Driver)
 

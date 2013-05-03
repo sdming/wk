@@ -124,6 +124,9 @@ type HttpContext struct {
 
 	// Session
 	Session Session
+
+	// SessionIsNew is true if create session in this request
+	SessionIsNew bool
 }
 
 // String
@@ -135,6 +138,11 @@ func (ctx *HttpContext) String() string {
 func (ctx *HttpContext) RouteValue(name string) (string, bool) {
 	v, ok := ctx.RouteData[name]
 	return v, ok
+}
+
+// FV is alias of FormValue
+func (ctx *HttpContext) FV(name string) string {
+	return ctx.Request.FormValue(name)
 }
 
 // FormValue is alias of Request FormValue

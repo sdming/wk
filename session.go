@@ -25,9 +25,20 @@ func (srv *HttpServer) configSession() error {
 	if name == "" {
 		name = defaultSessionDriver
 	}
-	Session := session.GetDriver(name)
-	if Session == nil {
+	SessionDriver = session.GetDriver(name)
+	if SessionDriver == nil {
 		return errors.New("session driver is nil:" + name)
+	}
+
+	//name = SessionDriver.Name()
+	if srv.Config.PluginConfig != nil {
+		if node, ok := srv.Config.PluginConfig.Child(name); ok && node != nil {
+			SessionDriver.Init(node.Dump())
+		} else {
+			SessionDriver.Init("")
+		}
+	} else {
+		SessionDriver.Init("")
 	}
 
 	Logger.Printf("Session: Enable=%v; Timeout =%d; Driver=%s %v \n",
@@ -46,31 +57,35 @@ func (srv *HttpServer) exeSession(ctx *HttpContext) {
 
 	cookie, err := ctx.Cookie(cookieSessionId)
 	if err != nil {
-		Logger.Println("ctx.Cookie error, create new session", err)
-		id = session.NewId()
-		Logger.Println("session.NewId()", id)
-		err := SessionDriver.New(id, time.Duration(srv.Config.SessionTimeout)*time.Second)
-		if err != nil {
-			Logger.Println("error", "Session.New", err)
-			return
-		}
-
-		cookie = &http.Cookie{
-			Name:  cookieSessionId,
-			Value: id,
-			Path:  `/`,
-			//Domain     string
-			MaxAge:   -1,
-			Secure:   true,
-			HttpOnly: true,
-		}
-		Logger.Println("cookie", cookie)
-		ctx.SetCookie(cookie)
-
+		//Logger.Println("ctx.Cookie error, create new session", err)
+		srv.newSession(ctx)
 	} else {
 		id = cookie.Value
+		if ok, err := SessionDriver.Exists(id); !ok || err != nil {
+			srv.newSession(ctx)
+		} else {
+			ctx.Session = Session(id)
+			ctx.SessionIsNew = false
+		}
+	}
+}
+
+func (srv *HttpServer) newSession(ctx *HttpContext) {
+	id := session.NewId()
+	err := SessionDriver.New(id, time.Duration(srv.Config.SessionTimeout)*time.Second)
+	if err != nil {
+		return
 	}
 
+	cookie := &http.Cookie{
+		Name:     cookieSessionId,
+		Value:    id,
+		Path:     `/`,
+		HttpOnly: true,
+	}
+	//Logger.Println("cookie", cookie)
+	ctx.SetCookie(cookie)
+	ctx.SessionIsNew = true
 	ctx.Session = Session(id)
 }
 

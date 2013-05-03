@@ -13,8 +13,9 @@ Roadmap
 * 0.2 configration framework. april 2013  
 * 0.3 web api server. april 2013  
 * 0.4 test on go 1.1. may 2013  
-* 0.5 view engine. may 2013  
-* 0.6 cookie, session. july 2013 (any suggestions for go in-memory cache package ?)   
+* 0.5 cookie, session. may 2013 (we are here)  
+
+* 0.6 view engine. may 2013  
 * 0.7 watch & load config      
 * 0.8 custome error & 404 page 
 * 0.9 file upload    
@@ -24,13 +25,14 @@ Roadmap
 Requirements
 ---
 
-go 1.0 +
+go 1.1
 
 Usage
 ---
 
 go get github.com/sdming/pathexp  
 go get github.com/sdming/kiss  
+go get github.com/sdming/mcache
 go get github.com/sdming/wk  
 
 Document
@@ -54,48 +56,6 @@ Getting Started
 	server.RouteTable.Get("/data/top/{count}").To(...)
 
 	server.Start()
-
-
-Basic Conception
----
-
-HttpContext is wrap of http.Request & http.Response  
-
-HttpProcessor handle request and build HttpResult(maybe)
-	
-	type HttpProcessor interface {
-		Execute(ctx *HttpContext)
-
-		// Register is called once when server init  
-		Register(server *HttpServer)
-	}
-
-
-HttpResult know how to write http.Response
-
-	type HttpResult interface {
-		Execute(ctx *HttpContext)
-	}
-
-
-The lifecyle is 
-
-1. receive request, create HttpContext   
-3. run each HttpProcessor  
-4. execute HttpResult  
-
-HttpProcessor
----
-
-You can add or remove HttpProcessor before server starting.  
-
-	type ProcessTable []*Process
-
-	func (pt *ProcessTable) Append(p *Process)
-
-	func (pt *ProcessTable) Remove(name string)
-
-	func (pt *ProcessTable) Insert(p *Process, index int) 
 
 
 Route
@@ -281,6 +241,60 @@ wk can manage configration for you. below is config example, more example at tes
 	}
 
 
+Session  
+---
+
+Example of session: ./demo/basic/controller/session.go  
+
+By default, session store in memory(mcache),  if you want to store somewhere else(redis, memcahe...), need to:
+
+1.	implement interface: session.Driver
+2. 	call session.Register to register it
+3. 	set SessionDriver of web.conf
+
+Basic Conception
+---
+
+HttpContext is wrap of http.Request & http.Response  
+
+HttpProcessor handle request and build HttpResult(maybe)
+	
+	type HttpProcessor interface {
+		Execute(ctx *HttpContext)
+
+		// Register is called once when server init  
+		Register(server *HttpServer)
+	}
+
+
+HttpResult know how to write http.Response
+
+	type HttpResult interface {
+		Execute(ctx *HttpContext)
+	}
+
+
+The lifecyle is 
+
+1. receive request, create HttpContext   
+3. run each HttpProcessor  
+4. execute HttpResult  
+
+HttpProcessor
+---
+
+You can add or remove HttpProcessor before server starting.  
+
+	type ProcessTable []*Process
+
+	func (pt *ProcessTable) Append(p *Process)
+
+	func (pt *ProcessTable) Remove(name string)
+
+	func (pt *ProcessTable) Insert(p *Process, index int) 
+
+
+
 http result
 ---
 
@@ -349,6 +363,10 @@ TODO:
 	how to simulate BigPipe & comet   
 	file: ./demo/basic/model/bigpipe.go (need fix bug?)     
  
+* 	session example  
+	how to add, get,remove... session
+	file: ./demo/basic/controller/session.go     
+
 ORM
 ---
 Maybe, maybe not. don't have a plan yet. focus on web server.    
@@ -359,7 +377,8 @@ No
 
 Css & js bundling
 ---
-Maybe, maybe not. Do we really need it ?
+Maybe, maybe not. Do we really need it ? 
+./demo/basic/model/file.go is a very sample of how to bundle files.   
 
 Cache, gzip
 ---
@@ -371,7 +390,8 @@ change log
 * kick off
 * fork gomvc, refactoring
 * configration framework
-* rest server    
+* rest server   
+* session   
 
 Contributing
 ---

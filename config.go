@@ -37,7 +37,7 @@ const (
 	defaultSessionTimeout int = 20 * 60
 
 	// defaultSessionDriver is the name of default session driver 
-	defaultSessionDriver string = "default"
+	defaultSessionDriver string = "session_default"
 )
 
 // WebConfig is configuration of go web server

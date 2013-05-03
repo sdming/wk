@@ -18,7 +18,7 @@ func newMCache() *MCache {
 }
 
 func (mc *MCache) Name() string {
-	return "default"
+	return "session_default"
 }
 
 func (mc *MCache) get(id string) (sessionEntry, bool) {
@@ -103,5 +103,5 @@ func (mc *MCache) Init(options string) error {
 }
 
 func init() {
-	Register("default", newMCache())
+	Register("session_default", newMCache())
 }

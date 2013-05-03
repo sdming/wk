@@ -36,11 +36,7 @@ func main() {
 		return
 	}
 
-	controller := controller.NewDemoController()
-
-	// url: /demo/xxx/xxx
-	// route to controller
-	server.RouteTable.Path("/demo/{action}/{id}").ToController(controller)
+	controller.RegisterDemoRoute(server)
 
 	// url: /data/top/10
 	// func: DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error)
@@ -114,26 +110,28 @@ func main() {
 		BindByNames("str", "uint", "int", "float", "byte")
 
 	//demo, show to define custome httpresult
-	model.RegisterQrRoute(server)
+	if enableQrCode := false; enableQrCode {
+		model.RegisterQrRoute(server)
+	}
 
-	enableEventTrace := false
-	if enableEventTrace {
+	if enableEventTrace := false; enableEventTrace {
 		model.RegisterEventTrace(server)
 	}
 
-	enableCompress := false
-	if enableCompress {
+	if enableCompress := false; enableCompress {
 		server.Processes.InsertBefore("_render", wk.NewCompressProcess("compress_test", "*", "/js/"))
 	}
 
-	enableFile := true
-	if enableFile {
+	if enableFile := true; enableFile {
 		model.RegisterFileRoute(server)
 	}
 
-	enableBigpipe := true
-	if enableBigpipe {
+	if enableBigpipe := true; enableBigpipe {
 		model.RegisterBigPipeRoute(server)
+	}
+
+	if debugSession := true; debugSession {
+		controller.RegisterSessionRoute(server)
 	}
 
 	server.Start()

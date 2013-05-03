@@ -202,3 +202,116 @@ func TestController(t *testing.T) {
 
 	dotest(t, "GET", "/demo/all/", nil, Json(data))
 }
+
+// get with cookie
+func getC(urlstr string, cookies []*http.Cookie) (body string, err error) {
+	var req *http.Request
+	var resp *http.Response
+	var b []byte
+
+	urlstr = baseUrl + urlstr
+
+	req, err = http.NewRequest("GET", urlstr, nil)
+	if err != nil {
+		return
+	}
+
+	if cookies != nil {
+		for _, cookie := range cookies {
+			req.AddCookie(cookie)
+		}
+	}
+
+	client := &http.Client{}
+	resp, err = client.Do(req)
+	if err != nil {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+		return
+	}
+
+	b, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	if err != nil {
+		return
+	}
+
+	body = string(b)
+	return
+}
+
+// 
+func dotestGetC(t *testing.T, url string, cookies []*http.Cookie, expect string) {
+	t.Log("get", url)
+
+	actual, err := getC(url, cookies)
+	if err != nil {
+		t.Error("getC error:", err, url)
+		return
+	}
+
+	if strings.TrimSpace(expect) != strings.TrimSpace(actual) {
+		t.Error("error:", url, "expect:", expect, "actual:", actual)
+		return
+	}
+}
+
+func TestSession(t *testing.T) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", baseUrl+"/id", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var sessionId string
+	cookies := resp.Cookies()
+	for _, cookie := range cookies {
+		if cookie.Name == "_go_session_" {
+			sessionId = cookie.Value
+		}
+	}
+
+	if sessionId == "" {
+		t.Log(sessionId)
+		t.Error("check sesion id cookie error")
+		return
+	}
+
+	// get, it doesn't exist, should return <nil>
+	dotestGetC(t, "/session/get?k=test", cookies, "<nil>")
+
+	// add, return true
+	dotestGetC(t, "/session/add?k=test&v=101", cookies, "true")
+
+	// add again, it's duplicate, return false
+	dotestGetC(t, "/session/add?k=test&v=101", cookies, "false")
+
+	// get, return the value just added
+	dotestGetC(t, "/session/get?k=test", cookies, "101")
+
+	// keys, return the key just added
+	dotestGetC(t, "/session/keys/", cookies, "[test]")
+
+	// remove, remove the key
+	dotestGetC(t, "/session/remove?k=test", cookies, "true")
+
+	// keys, should return [] since keys have been removed
+	dotestGetC(t, "/session/keys/", cookies, "[]")
+
+	// set, set a new key
+	dotestGetC(t, "/session/set?k=test&v=111", cookies, "true")
+
+	// get, return the value just set
+	dotestGetC(t, "/session/get?k=test", cookies, "111")
+
+	// abandon, abandon this session
+	dotestGetC(t, "/session/abandon/", cookies, "true")
+
+	// keys, should return [] since session has been abandoned
+	dotestGetC(t, "/session/keys/", cookies, "[]")
+
+}
