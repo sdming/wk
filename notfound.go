@@ -11,8 +11,9 @@ import (
 type NotFoundResult struct {
 }
 
-// Execute 
+// Execute
 // TODO: display custome 404 page
-func (r *NotFoundResult) Execute(ctx *HttpContext) {
+func (r *NotFoundResult) Execute(ctx *HttpContext) error {
 	http.Error(ctx.Resonse, msgNotFound, http.StatusNotFound)
+	return nil
 }

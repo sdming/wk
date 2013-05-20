@@ -242,7 +242,7 @@ func getC(urlstr string, cookies []*http.Cookie) (body string, err error) {
 	return
 }
 
-// 
+//
 func dotestGetC(t *testing.T, url string, cookies []*http.Cookie, expect string) {
 	t.Log("get", url)
 

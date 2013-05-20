@@ -51,7 +51,6 @@ func eventTraceFunc(e *wk.EventContext) {
 func printTrace(request *url.URL, trace []EventTrace) {
 
 	if len(trace) == 0 {
-		log.Panicln("")
 		return
 	}
 

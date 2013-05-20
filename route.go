@@ -184,12 +184,12 @@ func newRouteProcessor() *RouteProcessor {
 	return &RouteProcessor{}
 }
 
-// Register 
+// Register
 func (r *RouteProcessor) Register(server *HttpServer) {
 	r.server = server
 }
 
-// Execute find matched RouteRule and call it's Handler 
+// Execute find matched RouteRule and call it's Handler
 func (r *RouteProcessor) Execute(ctx *HttpContext) {
 	if ctx.Result != nil {
 		return
@@ -219,7 +219,7 @@ type FuncServer struct {
 	Formatter FormatFunc
 }
 
-// ReturnXml format result as Xml 
+// ReturnXml format result as Xml
 func (f *FuncServer) ReturnXml() *FuncServer {
 	f.Formatter = formatXml
 	return f
@@ -237,7 +237,7 @@ func (f *FuncServer) Return(fn FormatFunc) *FuncServer {
 	return f
 }
 
-// BindByIndex create function parameters from p1,p2,p3... 
+// BindByIndex create function parameters from p1,p2,p3...
 func (f *FuncServer) BindByIndex() {
 	binder := newIndexBinder(f.funcValue)
 
@@ -255,7 +255,7 @@ func (f *FuncServer) BindByNames(name ...string) {
 	}
 }
 
-// BindToStruct create struct parameters 
+// BindToStruct create struct parameters
 func (f *FuncServer) BindToStruct() {
 	binder := newStructBinder(f.funcValue)
 

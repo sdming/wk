@@ -4,37 +4,74 @@
 package wk
 
 import (
+	"sync"
 	"time"
 )
 
 var (
-	chanTimeout   = 60 * time.Second
-	chanBufferLen = 9
+	defaultChanResultTimeout = 60 * time.Second
 )
 
 // ChanResult
-// TODO: enhance it
+// TODO: just a demo, need to enhance
 type ChanResult struct {
-	Len   int
-	Chan  chan string
-	CType string
-	Start []byte
-	End   []byte
+	Wait        sync.WaitGroup
+	Chan        chan string
+	ContentType string
+	Start       []byte
+	End         []byte
+	Timeout     time.Duration
 }
 
 // Execute read string from chan and write to response
 // TODO: enhance it
-func (c *ChanResult) Execute(ctx *HttpContext) {
-	ctx.ContentType(c.CType)
+func (c *ChanResult) Execute(ctx *HttpContext) error {
+	ctx.ContentType(c.ContentType)
 
 	ctx.Write(c.Start)
 	ctx.Flush()
 
-	for i := 0; i < c.Len; i++ {
-		s := <-c.Chan
-		ctx.Write([]byte(s))
-		ctx.Flush()
+	if c.Timeout < time.Millisecond {
+		c.Timeout = defaultChanResultTimeout
 	}
+
+	var waitchan chan bool = make(chan bool)
+
+	go func() {
+		for s := range c.Chan {
+			ctx.Write([]byte(s))
+			ctx.Flush()
+		}
+	}()
+
+	go func() {
+		c.Wait.Wait()
+		close(c.Chan)
+		waitchan <- true
+		//close(waitchan)
+	}()
+
+	select {
+	case <-waitchan:
+	case <-time.After(c.Timeout):
+	}
+
+	close(waitchan)
+
 	ctx.Write(c.End)
-	ctx.Flush()
+	//ctx.Flush()
+
+	return nil
+}
+
+// http://dave.cheney.net/2013/04/30/curious-channels
+func waitMany(a, b chan bool) {
+	for a != nil || b != nil {
+		select {
+		case <-a:
+			a = nil
+		case <-b:
+			b = nil
+		}
+	}
 }

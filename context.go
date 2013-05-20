@@ -13,7 +13,7 @@ import (
 // RouteData is wrap of route data
 type RouteData map[string]string
 
-// Int parse route value as int 
+// Int parse route value as int
 func (r RouteData) Int(name string) (int, bool) {
 	if s, ok := r[name]; ok {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -33,7 +33,7 @@ func (r RouteData) IntOr(name string, v int) int {
 	return v
 }
 
-// Bool parse route value as bool 
+// Bool parse route value as bool
 func (r RouteData) Bool(name string) (bool, bool) {
 	if s, ok := r[name]; ok {
 		if b, err := strconv.ParseBool(s); err == nil {
@@ -53,7 +53,7 @@ func (r RouteData) BoolOr(name string, v bool) bool {
 	return v
 }
 
-// Float parse route value as float64 
+// Float parse route value as float64
 func (r RouteData) Float(name string) (float64, bool) {
 	if s, ok := r[name]; ok {
 		if f, err := strconv.ParseFloat(s, 64); err == nil {
@@ -73,7 +73,7 @@ func (r RouteData) FloatOr(name string, v float64) float64 {
 	return v
 }
 
-// Str return route value 
+// Str return route value
 func (r RouteData) Str(name string) (string, bool) {
 	if s, ok := r[name]; ok {
 		return s, true
@@ -101,10 +101,10 @@ type HttpContext struct {
 	// Method is http method
 	Method string
 
-	// RequestPath is 
+	// RequestPath is
 	RequestPath string
 
-	// PhysicalPath is path of static file 
+	// PhysicalPath is path of static file
 	PhysicalPath string
 
 	// RouteData
@@ -210,19 +210,24 @@ func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
 	return v
 }
 
-// // QueryValue return value from request URL query 
+// // QueryValue return value from request URL query
 // func (ctx *HttpContext) QueryValue(name string) []string {
 // 	return ctx.Request.URL.Query()[name]
 // }
 
-// UserAgent return request header User-Agent 
+// UserAgent return request header User-Agent
 func (ctx *HttpContext) UserAgent() string {
 	return ctx.Request.Header.Get(HeaderUserAgent)
 }
 
-// Header return request header by name
-func (ctx *HttpContext) Header(name string) string {
+// ReqHeader return request header by name
+func (ctx *HttpContext) ReqHeader(name string) string {
 	return ctx.Request.Header.Get(name)
+}
+
+// ResHeader return response header by name
+func (ctx *HttpContext) ResHeader(name string) string {
+	return ctx.Resonse.Header().Get(name)
 }
 
 // SetHeader set resonse http header
@@ -235,7 +240,7 @@ func (ctx *HttpContext) AddHeader(key string, value string) {
 	ctx.Resonse.Header().Add(key, value)
 }
 
-// ContentType set response header Content-Type 
+// ContentType set response header Content-Type
 func (ctx *HttpContext) ContentType(ctype string) {
 	ctx.Resonse.Header().Set(HeaderContentType, ctype)
 }
@@ -245,7 +250,7 @@ func (ctx *HttpContext) Status(code int) {
 	ctx.Resonse.WriteHeader(code)
 }
 
-// Accept return request header Accept 
+// Accept return request header Accept
 func (ctx *HttpContext) Accept() string {
 	return ctx.Request.Header.Get(HeaderAccept)
 }
@@ -255,7 +260,7 @@ func (ctx *HttpContext) Write(b []byte) (int, error) {
 	return ctx.Resonse.Write(b)
 }
 
-// Expires set reponse header Expires 
+// Expires set reponse header Expires
 func (ctx *HttpContext) Expires(t string) {
 	ctx.SetHeader(HeaderExpires, t)
 }
@@ -296,7 +301,7 @@ func (ctx *HttpContext) GetFlash(key string) (v interface{}, ok bool) {
 	return
 }
 
-// SetFlash set value to Context.Flash 
+// SetFlash set value to Context.Flash
 func (ctx *HttpContext) SetFlash(key string, v interface{}) {
 	if ctx.Flash == nil {
 		ctx.Flash = make(map[string]interface{})

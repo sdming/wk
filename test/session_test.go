@@ -16,19 +16,6 @@ func TestSessionId(t *testing.T) {
 
 var driverName = "session_default"
 
-func test(t *testing.T, m string, err error, expect, actual interface{}) {
-	t.Log(m, err, expect, actual)
-
-	if err != nil {
-		t.Error(m, "error", err)
-		return
-	}
-
-	if expect != actual {
-		t.Error(m, "expect", expect, actual, actual)
-	}
-}
-
 func TestSessionBasic(t *testing.T) {
 	id := session.NewId()
 	key := "key"
@@ -44,7 +31,7 @@ func TestSessionBasic(t *testing.T) {
 	}
 
 	if name := driver.Name(); name != driverName {
-		test(t, "Name", nil, driverName, name)
+		successAndEq(t, "Name", nil, driverName, name)
 	}
 
 	if err := driver.New(id, time.Second); err != nil {
@@ -53,41 +40,41 @@ func TestSessionBasic(t *testing.T) {
 	}
 
 	ok, err = driver.Add(id, key, value)
-	test(t, "Add", err, true, ok)
+	successAndEq(t, "Add", err, true, ok)
 
 	ok, err = driver.Add(id, key, value)
-	test(t, "Add Again", err, false, ok)
+	successAndEq(t, "Add Again", err, false, ok)
 
 	v, ok, err := driver.Get(id, key)
-	test(t, "Get err", err, true, ok)
-	test(t, "Get ok", err, value, v)
+	successAndEq(t, "Get err", err, true, ok)
+	successAndEq(t, "Get ok", err, value, v)
 
 	value = value + "_new"
 	err = driver.Set(id, key, value)
-	test(t, "Set", err, nil, nil)
+	successAndEq(t, "Set", err, nil, nil)
 
 	v, ok, err = driver.Get(id, key)
-	test(t, "Get after set", err, value, v)
+	successAndEq(t, "Get after set", err, value, v)
 
 	keys, err := driver.Keys(id)
-	test(t, "Keys", err, key, keys[0])
+	successAndEq(t, "Keys", err, key, keys[0])
 
 	err = driver.Remove(id, key)
-	test(t, "Remove", err, nil, nil)
+	successAndEq(t, "Remove", err, nil, nil)
 
 	v, ok, err = driver.Get(id, key)
-	test(t, "Get after remove", err, false, ok)
-	test(t, "Get after remove", err, nil, v)
+	successAndEq(t, "Get after remove", err, false, ok)
+	successAndEq(t, "Get after remove", err, nil, v)
 
 	keys, err = driver.Keys(id)
-	test(t, "Keys after remove", err, 0, len(keys))
+	successAndEq(t, "Keys after remove", err, 0, len(keys))
 
 	ok, err = driver.Exists(id)
-	test(t, "Exists", err, true, ok)
+	successAndEq(t, "Exists", err, true, ok)
 
 	err = driver.Abandon(id)
-	test(t, "Abandon", err, nil, nil)
+	successAndEq(t, "Abandon", err, nil, nil)
 
 	ok, err = driver.Exists(id)
-	test(t, "Exists after Abandon", err, false, ok)
+	successAndEq(t, "Exists after Abandon", err, false, ok)
 }

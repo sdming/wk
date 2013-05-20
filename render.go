@@ -3,7 +3,9 @@
 
 package wk
 
-import ()
+import (
+	"net/http"
+)
 
 // RenderProcessor render http result
 type RenderProcessor struct {
@@ -26,7 +28,7 @@ func (p *RenderProcessor) Execute(ctx *HttpContext) {
 	if ctx.Result == nil {
 		if ctx.Error != nil {
 			ctx.Result = &ErrorResult{
-				Err: ctx.Error,
+				Message: ctx.Error.Error(),
 			}
 		}
 	}
@@ -36,6 +38,9 @@ func (p *RenderProcessor) Execute(ctx *HttpContext) {
 	}
 
 	p.server.Fire(_render, _eventStartResultExecute, p, nil, ctx)
-	ctx.Result.Execute(ctx)
+	err := ctx.Result.Execute(ctx)
+	if err != nil {
+		p.server.error(ctx, err.Error(), http.StatusInternalServerError)
+	}
 	p.server.Fire(_render, _eventEndResultExecute, p, nil, ctx)
 }

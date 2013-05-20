@@ -12,6 +12,7 @@ type NotModifiedResult struct {
 }
 
 // Execute
-func (r *NotModifiedResult) Execute(ctx *HttpContext) {
+func (r *NotModifiedResult) Execute(ctx *HttpContext) error {
 	ctx.Status(http.StatusNotModified)
+	return nil
 }

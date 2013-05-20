@@ -16,7 +16,7 @@ type ActionSubscriber interface {
 	OnException(action *ActionContext)
 }
 
-// ActionContext is data that pass to ActionSubscriber 
+// ActionContext is data that pass to ActionSubscriber
 type ActionContext struct {
 	// Name is action method name
 	Name       string
@@ -32,17 +32,17 @@ type Controller struct {
 	// Handler
 	Handler reflect.Value
 
-	//Methods is cache of method reflect info 
+	//Methods is cache of method reflect info
 	Methods map[string]*gotype.MethodInfo
 
-	// actionSubscriber 
+	// actionSubscriber
 	actionSubscriber ActionSubscriber
 
 	//server
 	server *HttpServer
 }
 
-// newController 
+// newController
 func newController(x interface{}) (c *Controller, err error) {
 
 	handler := reflect.ValueOf(x)

@@ -9,7 +9,7 @@ import (
 func TestMatch(t *testing.T) {
 	var test [][4]string = [][4]string{
 
-		// /* 
+		// /*
 		{"/", "/any", "true", ""},
 		{"/", "/any.html", "true", ""},
 		{"/any", "/any", "true", ""},
@@ -28,7 +28,7 @@ func TestMatch(t *testing.T) {
 		{"/any/1/2/3/", "/any/1/2/3", "false", ""},
 		{"/any/", "/anyhoho/", "false", ""},
 
-		// /query.html    
+		// /query.html
 		{"/query.html", "/query", "false", ""},
 		{"/query.html", "/query/", "false", ""},
 		{"/query.html", "/query/any", "false", ""},
@@ -38,7 +38,7 @@ func TestMatch(t *testing.T) {
 		{"/query.html", "/query.html?&any=1", "true", ""},
 		{"/query.html", "/queryany.html", "false", ""},
 
-		// /{query} 
+		// /{query}
 		{"/{query}", "/query", "true", "query"},
 		{"/{query}", "/query/", "true", "query"},
 		{"/{query}", "/query/?any", "true", "query"},
@@ -46,7 +46,7 @@ func TestMatch(t *testing.T) {
 		{"/{query}", "/query.html?any", "true", "query"},
 		{"/{query}", "/query.html?&any=1", "true", "query"},
 
-		// /{query}/  
+		// /{query}/
 		{"/{query}/", "/query", "false", ""},
 		{"/{query}/", "/query/", "true", "query"},
 		{"/{query}/", "/query/?any", "true", "query"},
@@ -54,7 +54,7 @@ func TestMatch(t *testing.T) {
 		{"/{query}/", "/query.html?any", "false", ""},
 		{"/{query}/", "/query.html?&any=1", "false", ""},
 
-		// /query/hoho  
+		// /query/hoho
 		{"/query/hoho", "/query", "false", ""},
 		{"/query/hoho", "/query/", "false", ""},
 		{"/query/hoho", "/query/any", "false", ""},
@@ -66,7 +66,7 @@ func TestMatch(t *testing.T) {
 		{"/query/hoho", "/query/hoho.html?&any=1", "true", ""},
 		{"/query/hoho", "/queryany/hohoany", "false", ""},
 
-		// /query/{type} 
+		// /query/{type}
 		{"/query/{type}", "/query", "false", ""},
 		{"/query/{type}", "/query/", "true", ""},
 		{"/query/{type}", "/query/type", "true", "type"},
@@ -84,7 +84,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}", "/queryhoho", "false", ""},
 		{"/query/{type}", "/queryhoho/type", "false", ""},
 
-		// /query/{type}/ 
+		// /query/{type}/
 		{"/query/{type}/", "/query", "false", ""},
 		{"/query/{type}/", "/query/", "false", ""},
 		{"/query/{type}/", "/query/type", "false", ""},
@@ -102,7 +102,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/", "/queryhoho/", "false", ""},
 		{"/query/{type}/", "/queryhoho/type/", "false", ""},
 
-		// /query/{type}/{year}/{month}/{day}   
+		// /query/{type}/{year}/{month}/{day}
 		{"/query/{type}/{year}/{month}/{day}", "/query", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}", "/query/type/year/month", "false", ""},
@@ -117,7 +117,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}/{month}/{day}", "/queryhoho/type/year/month/day", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}", "/queryhoho/type", "false", ""},
 
-		// /query/{type}/{year}/{month}/{day}/   
+		// /query/{type}/{year}/{month}/{day}/
 		{"/query/{type}/{year}/{month}/{day}/", "/query", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}/", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}/", "/query/type/year/month", "false", ""},
@@ -132,7 +132,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}/{month}/{day}/", "/queryhoho/type/year/month/day", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}", "/queryhoho/type", "false", ""},
 
-		// /query/{type}/{year}-{month}-{day}   
+		// /query/{type}/{year}-{month}-{day}
 		{"/query/{type}/{year}-{month}-{day}", "/query", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}", "/query/type/year-month", "false", ""},
@@ -148,7 +148,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}-{month}-{day}", "/query/typehoho", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}", "/query/typehoho/year", "false", ""},
 
-		// /query/{type}/{year}-{month}-{day}/  
+		// /query/{type}/{year}-{month}-{day}/
 		{"/query/{type}/{year}-{month}-{day}/", "/query", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}/", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}/", "/query/type/year-month", "false", ""},
@@ -163,7 +163,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}-{month}-{day}/", "/query/typehoho/", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}/", "/query/typehoho/year", "false", ""},
 
-		// /query/{type}/{year}/{month}/{day}.html   
+		// /query/{type}/{year}/{month}/{day}.html
 		{"/query/{type}/{year}/{month}/{day}.html", "/query", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}.html", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}.html", "/query/type/year/month", "false", ""},
@@ -177,7 +177,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}/{month}/{day}.html", "/query/type/year/month/day.html?&hoho=1", "true", "type,year,month,day"},
 		{"/query/{type}/{year}/{month}/{day}.html", "/queryhoho/type/year/month/day.html", "false", ""},
 
-		// /query/{type}/{year}/{month}/{day}/detail.html   
+		// /query/{type}/{year}/{month}/{day}/detail.html
 		{"/query/{type}/{year}/{month}/{day}/detail.html", "/query", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}/detail.html", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}/{month}/{day}/detail.html", "/query/type/year/month", "false", ""},
@@ -191,7 +191,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}/{month}/{day}/detail.html", "/query/type/year/month/day/detail.html?&hoho=1", "true", "type,year,month,day"},
 		{"/query/{type}/{year}/{month}/{day}/detail.html", "/queryhoho/type/year/month/day/detail.html", "false", ""},
 
-		// /query/{type}/{year}-{month}-{day}.html 
+		// /query/{type}/{year}-{month}-{day}.html
 		{"/query/{type}/{year}-{month}-{day}.html", "/query", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}.html", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}.html", "/query/type/year-month", "false", ""},
@@ -205,7 +205,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}-{month}-{day}.html", "/query/type/year-month-day.html?&hoho=1", "true", "type,year,month,day"},
 		{"/query/{type}/{year}-{month}-{day}.html", "/queryhoho/type/year-month-day.html", "false", ""},
 
-		// /query/{type}/{year}-{month}-{day}/detail.html 
+		// /query/{type}/{year}-{month}-{day}/detail.html
 		{"/query/{type}/{year}-{month}-{day}/detail.html", "/query", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}/detail.html", "/query/type/year", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}/detail.html", "/query/type/year-month", "false", ""},
@@ -219,7 +219,7 @@ func TestMatch(t *testing.T) {
 		{"/query/{type}/{year}-{month}-{day}/detail.html", "/query/type/year-month-day/detail.html?&hoho=1", "true", "type,year,month,day"},
 		{"/query/{type}/{year}-{month}-{day}/detail.html", "/queryhoho/type/year-month-day/detail.html", "false", ""},
 
-		// page & orderby 
+		// page & orderby
 		{"/query/{type}/{year}-{month}-{day}-1", "/query/type/year-month-day", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}-1", "/query/type/year-month-day--any", "false", ""},
 		{"/query/{type}/{year}-{month}-{day}-1", "/query/type/year-month-day-1", "true", "type,year,month,day"},

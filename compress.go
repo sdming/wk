@@ -8,14 +8,14 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"io"
-
+	"net/http"
 	"strings"
 )
 
 // CompressProcessor compress http response with gzip or deflate
 // TODO: copy header from original result
 // TODO: configurable
-// TODO: filte by MimeType
+// TODO: filter by MimeType
 type CompressProcessor struct {
 	Enable   bool
 	Level    int
@@ -36,107 +36,98 @@ func NewCompressProcess(name, method, path string) *Process {
 }
 
 // Register initialize CompressProcessor
-func (p *CompressProcessor) Register(server *HttpServer) {
+func (cp *CompressProcessor) Register(server *HttpServer) {
 	//TODO: Read config file
-	p.Enable = true
-	p.Level = flate.BestSpeed
+	cp.Enable = true
+	cp.Level = flate.BestSpeed
 }
 
-// Execute convert result to  CompressResult if can 
-func (p *CompressProcessor) Execute(ctx *HttpContext) {
+// Execute convert result to  CompressResult
+func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 
 	if ctx.Result == nil || ctx.Error != nil {
 		return
 	}
 
-	data, ok := ctx.Result.(io.Reader)
-	if !ok {
+	if ctx.Method == HttpVerbsHead {
 		return
 	}
 
-	accept := ctx.Header("Accept-Encoding")
+	accept := ctx.ReqHeader("Accept-Encoding")
 	if accept == "" {
 		return
 	}
 
 	var contenType string
 
-	if ctx.Resonse.Header().Get("Content-Type") == "" {
-		if typ, ok := ctx.Result.(ContentType); ok {
-			contenType = typ.ContentType()
+	if ctx.ResHeader("Content-Type") == "" {
+		if typ, ok := ctx.Result.(ContentTyper); ok {
+			contenType = typ.Type()
 		} else {
+			//TODO: DetectContentType
 			//contenType = http.DetectContentType(b)
 		}
 	}
 
+	if contenType == "" {
+		return
+	}
+
+	var writer io.Writer
+	var err error
+	var format string
+
 	encodings := strings.Split(accept, ",")
 	for _, encoder := range encodings {
 		if encoder == "deflate" {
-			ctx.Result = &CompressResult{
-				Level:       p.Level,
-				Data:        data,
-				Format:      "deflate",
-				ContentType: contenType,
-			}
+			format = encoder
+			writer, err = zlib.NewWriterLevel(ctx.Resonse, cp.Level)
 		} else if encoder == "gzip" {
-			ctx.Result = &CompressResult{
-				Level:       p.Level,
-				Data:        data,
-				Format:      "gzip",
-				ContentType: contenType,
-			}
+			writer, err = gzip.NewWriterLevel(ctx.Resonse, cp.Level)
 		}
+
+		if format != "" {
+			break
+		}
+	}
+
+	if format == "" || err != nil {
 		return
 	}
 
-	return
+	ctx.Resonse = &compressResponseWriter{
+		ctx:         ctx,
+		writer:      writer,
+		contentType: contenType,
+		format:      format,
+	}
 
 }
 
-// CompressResult compress http response
-type CompressResult struct {
-	Data        io.Reader
-	Level       int
-	Format      string
-	ContentType string
+// compressResponseWriter wrap gzip/deflate and ResponseWriter
+type compressResponseWriter struct {
+	ctx           *HttpContext
+	writer        io.Writer
+	contentType   string
+	format        string
+	headerWritten bool
 }
 
-// Execute write compressed Data
-// TODO: handle err
-func (c *CompressResult) Execute(ctx *HttpContext) {
+func (crw *compressResponseWriter) Header() http.Header {
+	return crw.ctx.Resonse.Header()
+}
 
-	if c.Data == nil {
-		return
+func (crw *compressResponseWriter) WriteHeader(status int) {
+	crw.ctx.Resonse.WriteHeader(status)
+}
+
+func (crw *compressResponseWriter) Write(p []byte) (int, error) {
+	if !crw.headerWritten {
+		crw.ctx.SetHeader("Content-Encoding", crw.format)
+		if crw.ctx.ResHeader("Content-Type") == "" && crw.contentType != "" {
+			crw.ctx.ContentType(crw.contentType)
+		}
+		crw.headerWritten = true
 	}
-
-	var writer io.WriteCloser
-
-	if c.Format == "gzip" {
-		ctx.SetHeader("Content-Encoding", "gzip")
-		writer, _ = gzip.NewWriterLevel(ctx.Resonse, c.Level)
-	} else if c.Format == "deflate" {
-		ctx.SetHeader("Content-Encoding", "deflate")
-		writer, _ = zlib.NewWriterLevel(ctx.Resonse, c.Level)
-	} else {
-		panic("Not Implemented")
-	}
-
-	defer writer.Close()
-
-	if ctx.Resonse.Header().Get("Content-Type") == "" && c.ContentType != "" {
-		ctx.ContentType(c.ContentType)
-	}
-
-	var err error
-
-	if w, ok := c.Data.(io.WriterTo); ok {
-		w.WriteTo(writer)
-	} else {
-		io.Copy(writer, c.Data)
-	}
-
-	//TODO: handle err
-	if err != nil {
-		Logger.Println("debug compress error", err)
-	}
+	return crw.writer.Write(p)
 }

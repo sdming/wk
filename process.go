@@ -22,7 +22,7 @@ type Process struct {
 	Name string
 
 	// Path is url to match, / or empty to match all
-	// change to regex? containers muti ?   
+	// change to regex? containers muti ?
 	Path string
 
 	// Method is http method to match, * or empty to match all
@@ -93,7 +93,7 @@ func (pt *ProcessTable) Remove(name string) {
 	}
 }
 
-// Processes is global ProcessTable configration 
+// Processes is global ProcessTable configration
 var Processes ProcessTable
 
 // init Processes

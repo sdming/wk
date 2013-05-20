@@ -36,7 +36,7 @@ type Driver interface {
 	// Get return item value of session marked with sessionId, return false if key doesn't exists
 	Get(sessionId, key string) (interface{}, bool, error)
 
-	// Set add or update a item 
+	// Set add or update a item
 	Set(sessionId, key string, value interface{}) error
 
 	// Remove remove item from session

@@ -1,0 +1,59 @@
+{{set . "title" "title demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<script type="text/javascript">
+</script>
+<style>
+div{padding: 10px;}
+</style>
+{{end}}
+
+{{define "body" }}
+
+<h1>hello gwk!</h1>
+
+{{raw  "<!-- <script><style><html>  -->"}}
+
+<div>
+<lable for="selected">selected</lable>
+<select id="selected">
+	<option value="" ></option>
+	<option value="selected" {{selected true}}>selected</option>
+</select>
+<lable for="notselected">not selected</lable>
+<select id="notselected">
+	<option value="" ></option>
+	<option value="notselected" {{selected false}}>not selected</option>
+</select>
+</div>
+
+<div>
+<input id="checked" type="checkbox" {{checked true}}>checked</input>
+<input id="notchecked" type="checkbox" {{checked false}}>not checked</input>
+</div>
+
+<ul>
+<li id="eq">eq 123 123 = {{eq 123 123}}</li>
+<li id="eq">eqs "123" 123 = {{eqs "123" 123}}</li>
+<li id="gt">gt 3.14 3 = {{gt 3.14 3}}</li>
+<li id="le">le 1.1 2 = {{le 1.1 2}}</li>
+</ul>
+
+<div>{{nl2br "a\nb\nc" }}</div>
+
+<div id="settest-before">settest-before = {{.settest}}</div>
+{{set . "settest" "true"}}
+<div id="settest-after">settest-after = {{.settest}}</div>
+
+{{partial "user.html" .user}}
+
+{{end}}
+
+{{define "script" }}
+
+<script>
+{{jsvar "user" .user}}
+</script>
+
+{{end}}

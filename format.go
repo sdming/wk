@@ -11,7 +11,7 @@ type FormatList []FormatFunc
 // FormatFunc return formatted HttpResult or return (nil, false) if doesn't format it
 type FormatFunc func(*HttpContext, interface{}) (HttpResult, bool)
 
-// Append register a FormatFunc 
+// Append register a FormatFunc
 func (f *FormatList) Append(fn FormatFunc) {
 	*f = append(*f, fn)
 }

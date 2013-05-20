@@ -10,12 +10,13 @@ import (
 	"fmt"
 	"github.com/sdming/wk"
 	"math/rand"
+	"sync"
 	"time"
 )
 
 func RegisterBigPipeRoute(server *wk.HttpServer) {
-	// url: get /bugpipe/test.html
-	server.RouteTable.Get("/bugpipe/test.html").To(BigPipe)
+	// url: get /bigpipe/test.html
+	server.RouteTable.Get("/bigpipe/test.html").To(BigPipe)
 
 }
 
@@ -32,38 +33,57 @@ func BigPipe(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
         function p(s) {
             var panel = document.getElementById('panel');
             var n = document.createElement('div');
-            n.innerHTML = s + " create at " + new Date();
+            n.innerHTML = s + " -- at " + new Date().toTimeString();
             panel.appendChild(n);
         }
         </script>	
     `
 
 	end := `
+		<script>
+	    	p("end")
+	    </script>
+
         </body>
 	</html>`
 
 	l := 5
 
-	r := &wk.ChanResult{
-		Len:   l,
-		CType: "text/html",
-		Chan:  make(chan string, l),
-		Start: []byte(start),
-		End:   []byte(end),
+	cr := &wk.ChanResult{
+		Wait:        sync.WaitGroup{},
+		Chan:        make(chan string, l),
+		ContentType: "text/html",
+		Start:       []byte(start),
+		End:         []byte(end),
 	}
 
 	for i := 0; i < l; i++ {
-		go bigpipeOutput(r.Chan)
+		cr.Wait.Add(1)
+		go func(index int) {
+			defer cr.Wait.Done()
+
+			//d := 3 + rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10)
+			d := 3 + rand.Intn(10)
+			time.Sleep(time.Duration(d) * time.Second)
+
+			cr.Chan <- fmt.Sprintf(`
+			<script>
+	            p("goroutine %d delay %d")
+	        </script>
+	        `, index, d)
+		}(i)
 	}
 
-	return r, nil
+	return cr, nil
 
 }
 
-func bigpipeOutput(c chan string) {
+func bigpipeOutput(r *wk.ChanResult) {
+	defer r.Wait.Done()
+
 	d := 5 * (2 + rand.Intn(8))
 	time.Sleep(time.Duration(d) * time.Second)
-	c <- fmt.Sprintf(`
+	r.Chan <- fmt.Sprintf(`
 		<script>
             p("delay %d")
         </script>

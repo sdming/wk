@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// SubscriberFunc 
+// SubscriberFunc
 type SubscriberFunc func(*EventContext)
 
 // On implement Subscriber
@@ -36,7 +36,7 @@ type EventContext struct {
 	Context *HttpContext
 }
 
-// String 
+// String
 func (e *EventContext) String() string {
 	if e == nil {
 		return "<nil>"
@@ -52,7 +52,7 @@ func init() {
 	Subscribers = make([]*SubscriberItem, 0)
 }
 
-// On register event lister 
+// On register event lister
 func On(moudle, name string, handler Subscriber) {
 
 	sub := &SubscriberItem{
@@ -63,7 +63,7 @@ func On(moudle, name string, handler Subscriber) {
 	Subscribers = append(Subscribers, sub)
 }
 
-// On register event lister 
+// On register event lister
 func OnFunc(moudle, name string, handler func(*EventContext)) {
 	On(moudle, name, SubscriberFunc(handler))
 }

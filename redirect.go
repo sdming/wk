@@ -16,16 +16,23 @@ type RedirectResult struct {
 	UrlStr string
 }
 
+func Redirect(urlStr string, permanent bool) *RedirectResult {
+	return &RedirectResult{
+		UrlStr:    urlStr,
+		Permanent: permanent,
+	}
+}
+
 // Execute write status code http.StatusMovedPermanently or http.StatusFound
-func (r *RedirectResult) Execute(ctx *HttpContext) {
+func (r *RedirectResult) Execute(ctx *HttpContext) error {
 	var code int
 
 	if r.Permanent {
 		code = http.StatusMovedPermanently
-		return
 	} else {
 		code = http.StatusFound
 	}
 
 	http.Redirect(ctx.Resonse, ctx.Request, r.UrlStr, code)
+	return nil
 }

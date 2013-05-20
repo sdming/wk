@@ -13,7 +13,7 @@ import (
 
 const (
 	// defaultAddress is default address to listen
-	defaultAddress string = "127.0.0.1:8080"
+	defaultAddress string = "0.0.0.0:8080"
 
 	// defaultPubicDir is default directory of public content
 	defaultPubicDir string = "public"
@@ -21,13 +21,16 @@ const (
 	// defaultConfigDir is default directory of config files
 	defaultConfigDir string = "conf"
 
+	// defaultConfigDir is default directory of config files
+	defaultViewDir string = "views"
+
 	// defaultReadTimeout
 	defaultReadTimeout int = 30
 
 	// appConfigFile is default filename of app coinfig
 	appConfigFile string = "app.conf"
 
-	// webConfigFile is default file name of server coinfig 
+	// webConfigFile is default file name of server coinfig
 	webConfigFile string = "web.conf"
 
 	// pluginConfigFile is default file name of plugin coinfig
@@ -36,7 +39,7 @@ const (
 	// defaultSessionTimeout is default value of SessionTimeout
 	defaultSessionTimeout int = 20 * 60
 
-	// defaultSessionDriver is the name of default session driver 
+	// defaultSessionDriver is the name of default session driver
 	defaultSessionDriver string = "session_default"
 )
 
@@ -59,6 +62,9 @@ type WebConfig struct {
 
 	// ConfigDir is directory of config files
 	ConfigDir string
+
+	// ViewDir is base directory of views
+	ViewDir string
 
 	// AppConfig is app configuration data
 	AppConfig *kson.Node
@@ -85,7 +91,7 @@ type WebConfig struct {
 	SessionDriver string
 }
 
-// String 
+// String
 func (conf *WebConfig) String() string {
 	if conf == nil {
 		return "<nil>"
@@ -119,12 +125,14 @@ func defaultConfig() *WebConfig {
 	rootdir := defaultRootPath()
 	publicdir := path.Join(rootdir, defaultPubicDir)
 	confdir := path.Join(rootdir, defaultConfigDir)
+	viewdir := path.Join(rootdir, defaultViewDir)
 
 	conf := &WebConfig{
 		Address:        defaultAddress,
 		RootDir:        rootdir,
 		PublicDir:      publicdir,
 		ConfigDir:      confdir,
+		ViewDir:        viewdir,
 		ReadTimeout:    defaultReadTimeout,
 		SessionEnable:  false,
 		SessionTimeout: defaultSessionTimeout,

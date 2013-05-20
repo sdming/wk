@@ -4,7 +4,6 @@
 package wk
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 )
@@ -28,50 +27,36 @@ func Content(data interface{}, contentType string) *ContentResult {
 }
 
 // Execute write Data to response
-func (c *ContentResult) Execute(ctx *HttpContext) {
+func (c *ContentResult) Execute(ctx *HttpContext) error {
 	if c.ContentType != "" {
-		if ctype := ctx.Header("Content-Type"); ctype != "" {
+		if ctype := ctx.ReqHeader("Content-Type"); ctype != "" {
 			ctx.SetHeader("Content-Type", c.ContentType)
 		}
 	}
 
 	if w, ok := c.Data.(io.WriterTo); ok {
 		w.WriteTo(ctx.Resonse)
-		return
+		return nil
 	}
 
 	if r, ok := c.Data.(io.Reader); ok {
 		io.Copy(ctx.Resonse, r)
-		return
+		return nil
 	}
 
 	if b, ok := c.Data.([]byte); ok {
 		//  Write([]byte) (int, error)
 		ctx.Resonse.Write(b)
-		return
+		return nil
 	}
 
 	if s, ok := c.Data.(string); ok {
 		io.WriteString(ctx.Resonse, s)
-		return
+		return nil
 	}
 
 	fmt.Fprintln(ctx.Resonse, c.Data)
-}
-
-// WriteTo implement io.WriteTo
-func (c *ContentResult) WriteTo(w io.Writer) (n int64, err error) {
-	if wt, ok := c.Data.(io.WriterTo); ok {
-		return wt.WriteTo(w)
-	}
-
-	if b, ok := c.Data.([]byte); ok {
-		buf := bytes.NewBuffer(b)
-		return buf.WriteTo(w)
-	}
-
-	ni, err := fmt.Fprint(w, c.Data)
-	return int64(ni), err
+	return nil
 }
 
 // DataResult is wrap of simple type
@@ -81,14 +66,15 @@ type DataResult struct {
 	Data interface{}
 }
 
-// Data return *DataResult 
+// Data return *DataResult
 func Data(data interface{}) *DataResult {
 	return &DataResult{
 		Data: data,
 	}
 }
 
-// Execute write Data to response 
-func (c *DataResult) Execute(ctx *HttpContext) {
-	fmt.Fprintln(ctx.Resonse, c.Data)
+// Execute write Data to response
+func (c *DataResult) Execute(ctx *HttpContext) error {
+	_, err := fmt.Fprintln(ctx.Resonse, c.Data)
+	return err
 }

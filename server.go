@@ -22,11 +22,11 @@ type HttpServer struct {
 	// config
 	Config *WebConfig
 
-	// net.Listener 
+	// net.Listener
 	Listener net.Listener
 
-	// *ServeMux
-	Mux *http.ServeMux
+	// // *ServeMux
+	// Mux *http.ServeMux
 
 	// http server
 	server *http.Server
@@ -40,7 +40,8 @@ type HttpServer struct {
 	//server variables
 	Variables map[string]interface{}
 
-	// 
+	// ViewEngine
+	ViewEngine ViewEngine
 }
 
 // Fire can fire a event
@@ -77,7 +78,7 @@ func NewDefaultServer() (srv *HttpServer, err error) {
 	return NewHttpServer(conf)
 }
 
-// NewHttpServer return a http server with provided config 
+// NewHttpServer return a http server with provided config
 func NewHttpServer(config *WebConfig) (srv *HttpServer, err error) {
 	srv = &HttpServer{
 		Config: config,
@@ -112,7 +113,7 @@ func (srv *HttpServer) init() error {
 	srv.Variables = make(map[string]interface{})
 	srv.RouteTable = newRouteTable()
 
-	// copy hander, maybe does not need this?	
+	// copy hander, maybe does not need this?
 	l := len(Processes)
 	srv.Processes = make([]*Process, l)
 	for i := 0; i < l; i++ {
@@ -129,11 +130,12 @@ func (srv *HttpServer) listenAndServe() (err error) {
 	// 	return err
 	// }
 
-	srv.Mux = http.NewServeMux()
-	srv.Mux.Handle("/", srv)
+	// srv.Mux = http.NewServeMux()
+	// srv.Mux.Handle("/", srv)
 	srv.server = &http.Server{
-		Addr:           srv.Config.Address,
-		Handler:        srv.Mux,
+		Addr: srv.Config.Address,
+		//Handler:        srv.Mux,
+		Handler:        srv,
 		ReadTimeout:    time.Duration(srv.Config.ReadTimeout) * time.Second,
 		WriteTimeout:   time.Duration(srv.Config.WriteTimeout) * time.Second,
 		MaxHeaderBytes: srv.Config.MaxHeaderBytes,
@@ -143,16 +145,21 @@ func (srv *HttpServer) listenAndServe() (err error) {
 }
 
 // error return error message to client
-func (srv *HttpServer) error(ctx *HttpContext, err error) {
+func (srv *HttpServer) error(ctx *HttpContext, message string, code int) {
 	if LogLevel >= LogError {
-		Logger.Println(err.Error())
+		Logger.Println(message)
 		Logger.Println(debug.Stack())
 	}
 
-	ctx.Result = &ErrorResult{
-		Tag: "HttpServer",
-		Err: err,
+	if code == 0 {
+		code = http.StatusInternalServerError
 	}
+
+	if message == "" {
+		message = http.StatusText(code)
+	}
+
+	http.Error(ctx.Resonse, message, code)
 }
 
 // Start start server instance and listent request
@@ -170,6 +177,9 @@ func (srv *HttpServer) Start() (err error) {
 	)
 
 	if err = srv.configSession(); err != nil {
+		return
+	}
+	if err = srv.configViewEngine(); err != nil {
 		return
 	}
 
@@ -202,7 +212,7 @@ func (srv *HttpServer) Start() (err error) {
 // 	return nil
 // }
 
-// ServeHTTP 
+// ServeHTTP
 func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
@@ -249,7 +259,7 @@ func (srv *HttpServer) doServer(ctx *HttpContext) {
 	}
 }
 
-// buildContext 
+// buildContext
 func (s *HttpServer) buildContext(w http.ResponseWriter, r *http.Request) *HttpContext {
 	_ = r.ParseForm()
 	return &HttpContext{
@@ -296,7 +306,7 @@ func (srv *HttpServer) exeProcess(ctx *HttpContext, p *Process) (err error) {
 	return nil
 }
 
-// // MapPath return physical path	 
+// // MapPath return physical path
 // func (srv *HttpServer) MapPath(p string) string {
 
 // 	f := path.Join(srv.Config.PublicDir, p)

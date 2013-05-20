@@ -16,6 +16,13 @@ import (
 	"time"
 )
 
+func cleanFilePath(p string) string {
+	if os.PathSeparator == '\\' {
+		p = strings.Replace(p, `\`, `/`, -1)
+	}
+	return path.Clean(p)
+}
+
 func isFileExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -59,11 +66,9 @@ func methodNameN(skip int) string {
 	return f.Name()
 }
 
-const formatTime = "Mon, 02 Jan 2006 15:04:05 GMT"
-
 // webTime return formated time.Time
 func webTime(t time.Time) string {
-	return t.Format(formatTime)
+	return t.Format(http.TimeFormat)
 }
 
 // safeCall
@@ -82,9 +87,11 @@ func safeCall(fn reflect.Value, args []reflect.Value) (result []reflect.Value, e
 	return fn.Call(args), nil
 }
 
+// func isBodyAllowed(w *response) bool {
+// 	return w.status != StatusNotModified && w.req.Method != "HEAD"
+// }
+
 // http://doc.golang.org/src/pkg/net/http/fs.go
-// modtime is the modification time of the resource to be served, or IsZero().
-// return value is whether this request is now complete.
 func checkLastModified(w http.ResponseWriter, r *http.Request, modtime time.Time) bool {
 	if modtime.IsZero() {
 		return false
@@ -92,11 +99,14 @@ func checkLastModified(w http.ResponseWriter, r *http.Request, modtime time.Time
 
 	// The Date-Modified header truncates sub-second precision, so
 	// use mtime < t+1s instead of mtime <= t to check for unmodified.
-	if t, err := time.Parse(formatTime, r.Header.Get("If-Modified-Since")); err == nil && modtime.Before(t.Add(1*time.Second)) {
+	if t, err := time.Parse(http.TimeFormat, r.Header.Get("If-Modified-Since")); err == nil && modtime.Before(t.Add(1*time.Second)) {
+		h := w.Header()
+		delete(h, "Content-Type")
+		delete(h, "Content-Length")
 		w.WriteHeader(http.StatusNotModified)
 		return true
 	}
-	w.Header().Set("Last-Modified", modtime.UTC().Format(formatTime))
+	w.Header().Set("Last-Modified", modtime.UTC().Format(http.TimeFormat))
 	return false
 }
 
@@ -143,7 +153,7 @@ func convertResult(ctx *HttpContext, v reflect.Value) HttpResult {
 
 	switch {
 	case gotype.IsSimple(kind):
-		return &ContentResult{Data: i}
+		return &DataResult{Data: i}
 	case gotype.IsStruct(kind) || gotype.IsCollect(kind):
 		accept := ctx.Accept()
 		switch {

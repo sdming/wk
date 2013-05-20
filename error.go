@@ -4,14 +4,15 @@
 package wk
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 )
 
-// ErrorResult return error to client 
+// ErrorResult return error to client
 type ErrorResult struct {
-	Err error
-	Tag string
+	Message string
+	Stack   []byte
+	State   interface{}
 }
 
 // String
@@ -19,26 +20,27 @@ func (e *ErrorResult) String() string {
 	if e == nil {
 		return "<nil>"
 	}
-	return e.Err.Error()
+	return fmt.Sprintln(e.Message, e.Stack, e.State)
 }
 
 // Error return *ErrorResult
-func Error(msg string) *ErrorResult {
+func Error(message string) *ErrorResult {
 	return &ErrorResult{
-		Err: errors.New(msg),
+		Message: message,
 	}
 }
 
 // Execute write response
 // TODO: cutomer error view page
-func (e *ErrorResult) Execute(ctx *HttpContext) {
-	http.Error(ctx.Resonse, e.String(), http.StatusInternalServerError)
+func (e *ErrorResult) Execute(ctx *HttpContext) error {
+	http.Error(ctx.Resonse, e.Message, http.StatusInternalServerError)
+	return nil
 }
 
-// executeErrorResult
-func executeErrorResult(ctx *HttpContext, err error) {
-	e := &ErrorResult{
-		Err: err,
-	}
-	e.Execute(ctx)
-}
+// // executeErrorResult
+// func executeErrorResult(ctx *HttpContext, err error) {
+// 	e := &ErrorResult{
+// 		Err: err,
+// 	}
+// 	e.Execute(ctx)
+// }

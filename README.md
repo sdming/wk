@@ -1,9 +1,12 @@
 gwk
 =====
 
+Web, Let's GO!
+
 wk is a smart &amp; lightweight web server engine in Go   
 wk is webkit for web server  
 wk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wikipedia.org/wiki/Sun_Wukong)   
+
 
 
 Roadmap
@@ -303,13 +306,12 @@ http result
 * XmlResult: 		application/xml
 * JsonpResult: 		application/jsonp
 * ViewResult 		view
-* PartialViewResult	partial view
 * FileResult 		static file
 * FileStreamResult 	stream file
 * RedirectResult 	redirect
 * NotFoundResult  	404
 * ErrorResult 		error
-* more
+* BundleResult		bundle of files (will move from demo(FileJsBundling) to master )
 
 Event
 ---

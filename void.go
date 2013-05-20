@@ -8,6 +8,7 @@ type VoidResult struct {
 }
 
 // Execute
-func (r *VoidResult) Execute(ctx *HttpContext) {
-	//ctx.Resonse.Write([]byte(``))
+func (r *VoidResult) Execute(ctx *HttpContext) error {
+	ctx.Resonse.Write([]byte(``))
+	return nil
 }

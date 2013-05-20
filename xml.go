@@ -4,9 +4,9 @@
 package wk
 
 import (
-	"bytes"
 	"encoding/xml"
 	"io"
+	"net/http"
 )
 
 const (
@@ -20,8 +20,6 @@ type XmlResult struct {
 	buffer     io.Reader
 	Data       interface{}
 	NeedIndent bool
-	// Prefix     string
-	// Indent     string
 }
 
 // Xml return *XmlResult
@@ -29,8 +27,6 @@ func Xml(a interface{}) *XmlResult {
 	return &XmlResult{
 		Data:       a,
 		NeedIndent: false,
-		// Prefix:     _xmlPrefix,
-		// Indent:     _xmlIndent,
 	}
 }
 
@@ -43,51 +39,59 @@ func (x *XmlResult) marshal() ([]byte, error) {
 }
 
 // Execute encode result as xml and write to response
-func (x *XmlResult) Execute(ctx *HttpContext) {
-	if !x.NeedIndent {
-		w := ctx.Resonse.(io.Writer)
-		encoder := xml.NewEncoder(w)
-		err := encoder.Encode(x.Data)
+func (x *XmlResult) Execute(ctx *HttpContext) error {
+	ctx.ContentType(ContentTypeXml)
 
-		if err != nil {
-			executeErrorResult(ctx, err)
-		}
-		return
+	if !x.NeedIndent {
+		encoder := xml.NewEncoder(ctx.Resonse)
+		return encoder.Encode(x.Data)
 	}
 
 	b, err := x.marshal()
 	if err != nil {
-		executeErrorResult(ctx, err)
-		return
+		return err
 	}
 
-	ctx.ContentType(ContentTypeXml)
-	ctx.Write(b)
+	_, err = ctx.Write(b)
+	return err
 }
 
-func (j *XmlResult) ContentType() string {
+func (x *XmlResult) Type() string {
 	return ContentTypeXml
 }
 
-// Read reads marshaled data
-func (x *XmlResult) Read(p []byte) (n int, err error) {
-	if x.buffer == nil {
-		b, err := x.marshal()
-		if err != nil {
-			return 0, err
-		}
-		x.buffer = bytes.NewBuffer(b)
-	}
-
-	return x.buffer.Read(p)
-}
-
 // WriteTo writes marshaled data to w
-func (x *XmlResult) WriteTo(w io.Writer) (n int64, err error) {
+func (x *XmlResult) Write(header http.Header, body io.Writer) error {
+	header.Set(HeaderContentType, x.Type())
+
 	b, err := x.marshal()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	buffer := bytes.NewBuffer(b)
-	return buffer.WriteTo(w)
+
+	_, err = body.Write(b)
+	return err
 }
+
+// // Read reads marshaled data
+// func (x *XmlResult) Read(p []byte) (n int, err error) {
+// 	if x.buffer == nil {
+// 		b, err := x.marshal()
+// 		if err != nil {
+// 			return 0, err
+// 		}
+// 		x.buffer = bytes.NewBuffer(b)
+// 	}
+
+// 	return x.buffer.Read(p)
+// }
+
+// // WriteTo writes marshaled data to w
+// func (x *XmlResult) WriteTo(w io.Writer) (n int64, err error) {
+// 	b, err := x.marshal()
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	buffer := bytes.NewBuffer(b)
+// 	return buffer.WriteTo(w)
+// }

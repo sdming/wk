@@ -5,24 +5,120 @@ package wk
 
 import (
 	"errors"
+	"io"
 	"log"
+	"net/http"
 	"reflect"
 )
 
+const (
+	HttpVerbsGet     = "GET"
+	HttpVerbsPost    = "POST"
+	HttpVerbsPut     = "PUT"
+	HttpVerbsDelete  = "DELETE"
+	HttpVerbsHead    = "HEAD"
+	HttpVerbsTrace   = "TRACE"
+	HttpVerbsConnect = "CONNECT"
+	HttpVerbsOptions = "OPTIONS"
+)
+
+const (
+	HeaderAccept          = "Accept"
+	HeaderAcceptCharset   = "Accept-Charset"
+	HeaderAcceptEncoding  = "Accept-Encoding"
+	HeaderCacheControl    = "Cache-Control"
+	HeaderContentEncoding = "Content-Encoding"
+	HeaderContentLength   = "Content-Length"
+	HeaderContentType     = "Content-Type"
+	HeaderDate            = "Date"
+	HeaderEtag            = "Etag"
+	HeaderExpires         = "Expires"
+	HeaderLastModified    = "Last-Modified"
+	HeaderLocation        = "Location"
+	HeaderPragma          = "Pragma"
+	HeaderServer          = "Server"
+	HeaderSetCookie       = "Set-Cookie"
+	HeaderUserAgent       = "User-Agent"
+)
+
+const (
+	ContentTypeStream     = "application/octet-stream"
+	ContentTypeJson       = "application/json"
+	ContentTypeJsonp      = "application/jsonp"
+	ContentTypeJavascript = "application/javascript"
+	ContentTypeHTML       = "text/html"
+	ContentTypeXml        = "text/xml"
+	ContentTypeCss        = "text/css"
+	ContentTypePlain      = "text/plain"
+	ContentTypeGif        = "image/gif"
+	ContentTypeIcon       = "image/x-icon"
+	ContentTypeJpeg       = "image/jpeg"
+	ContentTypePng        = "image/png"
+)
+
+//application/x-www-form-urlencoded
+//multipart/form-data
+
 var (
-	// can not find view 
-	errViewNotFound = errors.New("can not find view")
+	msgServerTimeout     = "server timeout"
+	msgServerInternalErr = http.StatusText(http.StatusInternalServerError)
+	msgNotFound          = "404 page not found"
+	msgNoResult          = "no result"
+	msgNoView            = "view not found"
+	msgNoAction          = "can not find action"
+)
+
+const (
+	codeServerInternaError = http.StatusInternalServerError
+)
+
+const (
+	LogError = iota
+	LogInfo
+	LogDebug
+)
+
+const (
+	_root           = "/"
+	_any            = "*"
+	_route          = "_route"
+	_static         = "_static"
+	_render         = "_render"
+	_action         = "action"
+	_notFoundAction = "noaction"
+	_defaultAction  = "default"
+	_serverName     = "go web server "
+	_version        = "0.4"
+)
+
+const (
+	_wkWebServer             = "_webserver"
+	_eventStartRequest       = "start_request" //request start
+	_eventEndRequest         = "end_request"   //request end
+	_eventStartExecute       = "start_execute" //processor start execute
+	_eventEndExecute         = "end_execute"   //processor end
+	_eventStartResultExecute = "start_result"  //start to execute result
+	_eventEndResultExecute   = "end_result"    //result execute end
+	_eventStartAction        = "start_action"  //
+	_eventEndAction          = "end_action"
+)
+
+const (
+	_defaultSize = 61
+)
+
+var (
+	// can not find view
+	errNoView = errors.New(msgNoView)
 
 	// internal error
-	errInternalError = errors.New(msgServerInternalErr)
+	errInternalError = errors.New(http.StatusText(http.StatusInternalServerError))
 
 	// can not find actionin method
 	errNoAction = errors.New(msgNoAction)
 
 	// httpresult is nil
-	errNoResult = &ErrorResult{
-		Err: errors.New(msgNoResult),
-	}
+	errNoResult = errors.New(msgNoResult)
 )
 
 var (
@@ -31,9 +127,6 @@ var (
 
 	// httpresult is nil
 	resultNotFound = &NotFoundResult{}
-
-	// no result
-	resultNoResult = &ErrorResult{Err: errors.New(msgNoResult)}
 )
 
 var (
@@ -52,5 +145,24 @@ var (
 )
 
 type Handler interface {
-	Execute(*HttpContext)
+	Execute(ctx *HttpContext)
+}
+
+type ViewData map[string]interface{}
+
+type ContentTyper interface {
+	Type() string
+}
+
+type Render interface {
+	ContentTyper
+
+	// Write write header & body
+	Write(header http.Header, body io.Writer) error
+}
+
+// HttpResult is a interface that define how to write server reply to response
+type HttpResult interface {
+	// Execute
+	Execute(ctx *HttpContext) error
 }

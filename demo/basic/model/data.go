@@ -8,7 +8,10 @@ basic demo
 package model
 
 import (
+	"errors"
 	"fmt"
+	"github.com/sdming/kiss/kson"
+	"github.com/sdming/wk"
 	"strconv"
 )
 
@@ -90,4 +93,94 @@ func (d *Data) String() string {
 	}
 	return fmt.Sprintf("string:%s;uint:%d;int:%d;float:%f;byte:%c",
 		d.Str, d.Uint, d.Int, d.Float, d.Byte)
+}
+
+func DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+
+	if count, ok := ctx.RouteData.Int("count"); !ok {
+		err = errors.New("parameter invalid:" + "count")
+	} else {
+		data := DataTop(count)
+		result = wk.Json(data)
+	}
+	return
+}
+
+func RegisterDataRoute(server *wk.HttpServer) {
+	// url: /data/top/10
+	// func: DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error)
+	// route to func (*wk.HttpContext) (wk.HttpResult, error)
+	server.RouteTable.Get("/data/top/{count}").To(DataTopHandle)
+
+	// url: /data/int/1
+	// func: DataByInt(i int) *Data
+	// route to a function, convert parameter by index(p0,p1,p2...)
+	server.RouteTable.Get("/data/int/{p0}?").ToFunc(DataByInt)
+
+	// url: /data/range/1-9
+	// func: DataByIntRange(start, end int) []*Data
+	// route to a function, convert parameter by index(p0,p1,p2...)
+	server.RouteTable.Get("/data/range/{p0}-{p1}").ToFunc(DataByIntRange)
+
+	// url: /data/int/1/xml
+	// func: DataByInt(i int) *Data
+	// return xml
+	server.RouteTable.Get("/data/int/{p0}/xml").ToFunc(DataByInt).ReturnXml()
+
+	// url: /data/int/1/json
+	// func: DataByInt(i int) *Data
+	// return json
+	server.RouteTable.Get("/data/int/{p0}/json").ToFunc(DataByInt).ReturnJson()
+
+	// url: /data/int/1/kson
+	// func: DataByInt(i int) *Data
+	// return custome formatted data
+	server.RouteTable.Get("/data/int/{p0}/kson").ToFunc(DataByInt).Return(formatKson)
+
+	// url: /data/name/1
+	// func: DataByInt(i int) *Data
+	// route to a function, convert parameter by name
+	server.RouteTable.Get("/data/name/{id}").ToFunc(DataByInt).
+		BindByNames("id")
+
+	// url: /data/namerange/1-9
+	// func: DataByIntRange(start, end int) []*Data
+	// route to a function, convert parameter by name
+	server.RouteTable.Get("/data/namerange/{start}-{end}").ToFunc(DataByIntRange).
+		BindByNames("start", "end")
+
+	// url: /data/namerange/?start=1&end=9
+	// func: DataByIntRange(start, end int) []*Data
+	// route to a function, convert parameter by name
+	server.RouteTable.Get("/data/namerange/").ToFunc(DataByIntRange).
+		BindByNames("start", "end")
+
+	// url: post /data/post?
+	// form:{"str": {"string"}, "uint": {"1024"}, "int": {"32"}, "float": {"1.1"}, "byte": {"64"}}
+	// func: DataPost(data Data) string
+	// route http post to function, build struct parameter from form
+	server.RouteTable.Post("/data/post?").ToFunc(DataPost).BindToStruct()
+
+	// url: post /data/postptr?
+	// form:{"str": {"string"}, "uint": {"1024"}, "int": {"32"}, "float": {"1.1"}, "byte": {"64"}}
+	// func DataPostPtr(data *Data) string
+	// route http post to function, build struct parameter from form
+	server.RouteTable.Post("/data/postptr?").ToFunc(DataPostPtr).BindToStruct()
+
+	// url: delete /data/delete/1
+	// func: DataDelete(i int) string
+	// route http delete to function
+	server.RouteTable.Delete("/data/delete/{p0}").ToFunc(DataDelete)
+
+	// url: get /data/set?str=string&uint=1024&int=32&float=3.14&byte=64
+	// func: DataSet(s string, u uint64, i int, f float32, b byte) *Data
+	// test diffrent parameter type
+	server.RouteTable.Get("/data/set?").ToFunc(DataSet).
+		BindByNames("str", "uint", "int", "float", "byte")
+
+}
+
+func formatKson(ctx *wk.HttpContext, x interface{}) (wk.HttpResult, bool) {
+	b, _ := kson.Marshal(x)
+	return wk.Content(string(b), "text/plain"), true
 }
