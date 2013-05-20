@@ -3,10 +3,9 @@ gwk
 
 Web, Let's GO!
 
-wk is a smart &amp; lightweight web server engine in Go   
-wk is webkit for web server  
-wk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wikipedia.org/wiki/Sun_Wukong)   
-
+gwk is a smart &amp; lightweight web server engine in Go   
+gwk is webkit for web server  
+gwk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wikipedia.org/wiki/Sun_Wukong)   
 
 
 Roadmap
