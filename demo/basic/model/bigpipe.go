@@ -40,7 +40,7 @@ func BigPipe(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
     `
 
 	end := `
-		<script>
+	<script>
 	    	p("end")
 	    </script>
 

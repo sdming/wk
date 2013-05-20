@@ -14,6 +14,7 @@ var (
 
 // ChanResult
 // TODO: just a demo, need to enhance
+// TODO: doesn't work on chrome
 type ChanResult struct {
 	Wait        sync.WaitGroup
 	Chan        chan string
