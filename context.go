@@ -287,7 +287,7 @@ func (ctx *HttpContext) Flush() {
 	// 	buf.Flush()
 	// }
 	f, ok := ctx.Resonse.(http.Flusher)
-	if ok {
+	if ok && f != nil {
 		f.Flush()
 	}
 }

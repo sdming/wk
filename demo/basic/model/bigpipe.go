@@ -27,25 +27,28 @@ func BigPipe(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
     <body>
        
         <div id="panel">
-
         </div>
+
         <script>
-        function p(s) {
-            var panel = document.getElementById('panel');
-            var n = document.createElement('div');
-            n.innerHTML = s + " -- at " + new Date().toTimeString();
-            panel.appendChild(n);
-        }
+	        function p(s) {
+	            var panel = document.getElementById('panel');
+	            var n = document.createElement('div');
+	            n.innerHTML = s + " -- at " + new Date().toTimeString();
+	            panel.appendChild(n);
+	        }
         </script>	
-    `
+        
+`
 
 	end := `
-	<script>
-	    	p("end")
-	    </script>
 
-        </body>
-	</html>`
+	<script>
+    	p("end")
+    </script>
+
+    </body>
+</html>
+`
 
 	l := 5
 
@@ -67,10 +70,10 @@ func BigPipe(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 			time.Sleep(time.Duration(d) * time.Second)
 
 			cr.Chan <- fmt.Sprintf(`
-			<script>
-	            p("goroutine %d delay %d")
-	        </script>
-	        `, index, d)
+		<script>
+	        p("goroutine %d delay %d")
+	    </script>
+`, index, d)
 		}(i)
 	}
 

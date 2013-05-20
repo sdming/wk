@@ -15,9 +15,6 @@ type HttpResult interface {
 	Execute(ctx *HttpContext) error
 }
  
-//最后call Wrte Head()??
+//call Wrte Head()??
 // etag ??
 
-
-// bodyAllowed returns true if a Write is allowed for this response type.
-// It's illegal to call this before the header has been flushed.
