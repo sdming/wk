@@ -3,9 +3,9 @@ package wk_test
 import (
 	"bytes"
 	"github.com/sdming/wk"
-	"mime"
+	//"mime"
 	"net/http"
-	"path/filepath"
+	//"path/filepath"
 	"testing"
 )
 
@@ -95,26 +95,26 @@ func TestXmlResult(t *testing.T) {
 	equal(t, "xml body", toxml(data), body.String())
 }
 
-func TestViewResult(t *testing.T) {
-	data := make(wk.ViewData)
-	data["user"] = defaultUser()
+// func TestViewResult(t *testing.T) {
+// 	data := make(wk.ViewData)
+// 	data["user"] = defaultUser()
 
-	var view *wk.ViewResult = wk.View("basic.html", data)
-	var result wk.HttpResult = view
-	t.Log("ViewResult", result)
+// 	var view *wk.ViewResult = wk.View("basic.html", data)
+// 	var result wk.HttpResult = view
+// 	t.Log("ViewResult", result)
 
-	wk.DefaultViewEngine = defaultViewEngine()
-	t.Log("ViewEngine", wk.DefaultViewEngine)
-	expect := defaultRootPath() + "views/" + "output-basic.html"
+// 	wk.DefaultViewEngine = defaultViewEngine()
+// 	t.Log("ViewEngine", wk.DefaultViewEngine)
+// 	expect := defaultRootPath() + "views/" + "output-basic.html"
 
-	header := make(http.Header)
-	body := &bytes.Buffer{}
-	var render wk.Render = view
+// 	header := make(http.Header)
+// 	body := &bytes.Buffer{}
+// 	var render wk.Render = view
 
-	err := render.Write(header, body)
-	success(t, "view write", err)
-	equal(t, "view header", mime.TypeByExtension(filepath.Ext(view.File)), header.Get(wk.HeaderContentType))
-	//t.Log(readFile(expect))
-	//t.Log(body.String())
-	equal(t, "view body", removeSpace(readFile(expect)), removeSpace(body.String()))
-}
+// 	err := render.Write(header, body)
+// 	success(t, "view write", err)
+// 	equal(t, "view header", mime.TypeByExtension(filepath.Ext(view.File)), header.Get(wk.HeaderContentType))
+// 	//t.Log(readFile(expect))
+// 	//t.Log(body.String())
+// 	equal(t, "view body", removeSpace(readFile(expect)), removeSpace(body.String()))
+// }

@@ -15,6 +15,11 @@ type HttpResult interface {
 	Execute(ctx *HttpContext) error
 }
  
+
+default to index.html?
+call default action (controller)
+
+
 //call Wrte Head()??
 // etag ??
 

@@ -1,0 +1,48 @@
+{{set . "title" "Location" }}
+{{import "_layout.html" }}
+
+{{define "head" }}{{end}}
+
+{{define "body" }}
+
+<div class="body">
+	<div class="container">
+	<ul class="breadcrumb">
+	  <li><a href="/user/index/">User</a> <span class="divider">/</span></li>
+	  <li class="active">Location</li>
+	</ul>
+	<hr/>
+	<div id="content">
+		<table class="table table-bordered">
+		  <thead>
+		    <tr>
+		      <th>Id</th>
+		      <th>Name</th>
+		      <th>Location</th>
+		      <th>Gender</th>
+		      <th>Skills</th>
+		    </tr>
+		  </thead>
+		  <tbody>
+		  	{{if .users}}
+			  	{{range .users}}
+			  	<tr>
+			      <td>{{.Id}}</td>
+			      <td>{{.Name}}</td>
+			      <td>{{locationtext .Location}}</td>
+			      <td>{{.Gender}}</td>
+			      <td>{{.Skills}}</td>
+			    </tr>
+				{{end}}
+			{{end}}
+		  </tbody>
+		</table>
+
+	</div>
+
+</div>
+</div>
+
+{{end}}
+
+{{define "script" }}{{end}}

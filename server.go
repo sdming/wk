@@ -148,7 +148,7 @@ func (srv *HttpServer) listenAndServe() (err error) {
 func (srv *HttpServer) error(ctx *HttpContext, message string, code int) {
 	if LogLevel >= LogError {
 		Logger.Println(message)
-		Logger.Println(debug.Stack())
+		Logger.Println(string(debug.Stack()))
 	}
 
 	if code == 0 {
@@ -174,6 +174,7 @@ func (srv *HttpServer) Start() (err error) {
 		"\n\t RootDir:", srv.Config.RootDir,
 		"\n\t ConfigDir:", srv.Config.ConfigDir,
 		"\n\t PublicDir:", srv.Config.PublicDir,
+		"\n\t Debug:", srv.Config.Debug,
 	)
 
 	if err = srv.configSession(); err != nil {
@@ -267,6 +268,7 @@ func (s *HttpServer) buildContext(w http.ResponseWriter, r *http.Request) *HttpC
 		Request:     r,
 		Method:      r.Method,
 		RequestPath: cleanPath(strings.TrimSpace(r.URL.Path)),
+		ViewData:    make(map[string]interface{}),
 	}
 }
 

@@ -1,0 +1,8 @@
+{{$x := .}}
+
+{{range skill}}
+<label class="checkbox inline">
+	<input type="checkbox" name="skill" value="{{.Value}}"  {{ incl $x .Value | checked }} >{{.Text}}
+	</label>
+{{end}}
+

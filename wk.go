@@ -166,3 +166,18 @@ type HttpResult interface {
 	// Execute
 	Execute(ctx *HttpContext) error
 }
+
+// type RuntimeError struct {
+// 	Err    error
+// 	Stack  string
+// 	Target string
+// }
+
+// func (re *RuntimeError) Error() string {
+// 	return re.Err.Error()
+// }
+
+// func (re *RuntimeError) String() string {
+// 	log.Println(fmt.Sprintf("error=%v;target=%s;statck=%s", re.Err, re.Target, re.Stack))
+// 	return fmt.Sprintf("error=%v;target=%s;statck=%s", re.Err, re.Target, re.Stack)
+// }

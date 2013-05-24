@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sdming/kiss/gotype"
-	"github.com/sdming/pathexp"
+	"github.com/sdming/wk/pathexp"
 	"reflect"
 	"strconv"
 	"strings"

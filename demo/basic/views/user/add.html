@@ -1,0 +1,103 @@
+{{set . "title" "Add" }}
+{{import "_layout.html" }}
+
+{{define "head" }}{{end}}
+
+{{define "body" }}
+
+<div class="body">
+	<div class="container">
+	<ul class="breadcrumb">
+	  <li><a href="/user/index/">User</a> <span class="divider">/</span></li>
+	  <li class="active">Add</li>
+	</ul>
+	<hr/>
+
+	<div id="content">
+	    <div class="well">
+
+	    	<form class="form-horizontal form-inline" method="post" id="userform">
+			  	<div class="control-group">
+				    <label class="control-label" for="inputName">Name</label>
+				    <div class="controls">
+				      <input type="text" id="inputName" name="name" placeholder="Name" value="{{.ctx.FV "name"}}">
+				    </div>
+			  	</div>
+			  	<div class="control-group">
+				    <label class="control-label" for="inputLocation">Location</label>
+				    <div class="controls">
+				      {{partial "share/location.html" (.ctx.FV "location")}}
+				    </div>
+			  	</div>
+				<div class="control-group">
+				    <label class="control-label" for="inputGender">Gender</label>
+				    <div class="controls">
+				      	<label class="radio inline">
+						  <input type="radio" name="gender" value="male" {{  eq "male" (.ctx.FV "gender") | checked }}>
+						  male
+						</label>
+						<label class="radio inline">
+						  <input type="radio" name="gender" value="female" {{ eq "female" (.ctx.FV "gender") | checked }}>
+						  female
+						</label>
+				    </div>
+				</div>
+			 	<div class="control-group">
+				    <label class="control-label" for="inputSkills">Skills</label>
+				    <div class="controls">
+				      {{partial "share/skill.html" .ctx.Request.Form.skill}}
+				    </div>
+				</div>
+
+			  	<div class="form-actions">
+				  	<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+
+				{{if .errmsg}}
+				<div class="alert">{{.errmsg}}</div>
+				{{end}}
+			</form>
+	    </div>
+	</div>
+
+</div>
+</div>
+
+{{end}}
+
+{{define "script" }}
+
+<script src="/js/jquery.validate.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+ 
+ $('#userform').validate(
+ {
+  rules: {
+    name: {
+      required: true,
+      remote: "/user/exists/"
+    }
+  },
+  messages: {
+	"name": {
+      remote: "name exists"
+    }
+  },
+  onkeyup: false,
+  highlight: function(element) {
+    $(element).closest('.controls').removeClass('success').addClass('error');
+  },
+  success: function(element) {
+    element
+    .text('OK!').addClass('valid')
+    .closest('.controls').removeClass('error').addClass('success');
+  }
+ });
+}); 
+
+</script>
+
+{{end}}

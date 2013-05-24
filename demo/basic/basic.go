@@ -24,6 +24,7 @@ func main() {
 	}
 
 	controller.RegisterDemoRoute(server)
+	controller.RegisterUserRoute(server)
 
 	model.RegisterDataRoute(server)
 

@@ -13,7 +13,6 @@ var (
 )
 
 // ChanResult
-// TODO: just a demo, need to enhance
 // TODO: doesn't work on chrome
 type ChanResult struct {
 	Wait        sync.WaitGroup
@@ -25,7 +24,6 @@ type ChanResult struct {
 }
 
 // Execute read string from chan and write to response
-// TODO: enhance it
 func (c *ChanResult) Execute(ctx *HttpContext) error {
 	ctx.ContentType(c.ContentType)
 
@@ -36,20 +34,21 @@ func (c *ChanResult) Execute(ctx *HttpContext) error {
 		c.Timeout = defaultChanResultTimeout
 	}
 
-	var waitchan chan bool = make(chan bool)
+	waitchan := make(chan bool)
+	donechan := make(chan bool)
 
 	go func() {
 		for s := range c.Chan {
 			ctx.Write([]byte(s))
 			ctx.Flush()
 		}
+		donechan <- true
 	}()
 
 	go func() {
 		c.Wait.Wait()
 		close(c.Chan)
 		waitchan <- true
-		//close(waitchan)
 	}()
 
 	select {
@@ -57,8 +56,7 @@ func (c *ChanResult) Execute(ctx *HttpContext) error {
 	case <-time.After(c.Timeout):
 	}
 
-	close(waitchan)
-
+	<-donechan
 	ctx.Write(c.End)
 	//ctx.Flush()
 

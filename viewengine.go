@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"path"
 	"regexp"
 	"strings"
@@ -24,7 +25,13 @@ var DefaultViewEngine ViewEngine
 // configViewEngine
 // TODO: remove DefaultViewEngine?
 func (srv *HttpServer) configViewEngine() error {
-	ve, err := NewGoHtml(srv.Config.ViewDir)
+	// ve, err := NewGoHtml(srv.Config.ViewDir)
+	// if err != nil {
+	// 	return err
+	// }
+	//TODO:move to config file
+	ve := &GoHtml{}
+	err := ve.Register(srv)
 	if err != nil {
 		return err
 	}
@@ -41,7 +48,7 @@ func (srv *HttpServer) configViewEngine() error {
 
 // ViewEngine is wrap of executing template file
 type ViewEngine interface {
-	Register(server *HttpServer)
+	Register(server *HttpServer) error
 	Execte(writer io.Writer, file string, data interface{}) error
 }
 
@@ -57,47 +64,62 @@ type GoHtml struct {
 	Funcs          template.FuncMap
 }
 
-// NewGoHtml return a *GoHtml, it retur error if basePath doesn't exists
-func NewGoHtml(basePath string) (*GoHtml, error) {
-	// if basePath == "" {
-	// 	return nil, errors.New("bash path cann't be empty")
-	// }
+// // NewGoHtml return a *GoHtml, it retur error if basePath doesn't exists
+// func NewGoHtml(basePath string) *GoHtml {
+// 	// if basePath == "" {
+// 	// 	return nil, errors.New("bash path cann't be empty")
+// 	// }
 
-	if basePath != "" {
-		basePath = cleanFilePath(basePath)
-		if !strings.HasSuffix(basePath, "/") {
-			basePath = basePath + "/"
-		}
-	}
+// 	// if basePath != "" {
+// 	// 	basePath = cleanFilePath(basePath)
+// 	// 	if !strings.HasSuffix(basePath, "/") {
+// 	// 		basePath = basePath + "/"
+// 	// 	}
+// 	// }
 
-	// if !isDirExists(basePath) {
-	// 	return nil, errors.New("path doesn't exists " + basePath)
-	// }
+// 	// if !isDirExists(basePath) {
+// 	// 	return nil, errors.New("path doesn't exists " + basePath)
+// 	// }
 
-	ve := &GoHtml{
-		BasePath:       basePath,
-		TemplatesCache: make(map[string]*template.Template),
-		Funcs:          make(template.FuncMap),
-	}
+// 	// ve := &GoHtml{
+// 	// 	BasePath:       basePath,
+// 	// 	TemplatesCache: make(map[string]*template.Template),
+// 	// 	Funcs:          make(template.FuncMap),
+// 	// }
 
-	for name, fn := range TemplateFuncs {
-		ve.Funcs[name] = fn
-	}
-	ve.Funcs["partial"] = ve.renderfile // render a template file
+// 	// for name, fn := range TemplateFuncs {
+// 	// 	ve.Funcs[name] = fn
+// 	// }
+// 	// ve.Funcs["partial"] = ve.renderfile // render a template file
 
-	return ve, nil
-}
+// 	// return ve, nil
+
+// }
 
 // Register initialize viewengine
-func (ve *GoHtml) Register(server *HttpServer) {
+func (ve *GoHtml) Register(server *HttpServer) error {
 	if server.Config.ViewDir == "" {
-		return
+		return nil
 	}
 	basePath := cleanFilePath(server.Config.ViewDir)
 	if !strings.HasSuffix(basePath, "/") {
 		basePath = basePath + "/"
 	}
 	ve.BasePath = basePath
+
+	ve.TemplatesCache = make(map[string]*template.Template)
+	ve.Funcs = make(template.FuncMap)
+
+	for name, fn := range TemplateFuncs {
+		ve.Funcs[name] = fn
+	}
+	ve.Funcs["partial"] = ve.renderfile // render a template file
+
+	if server.Config.Debug {
+		ve.EnableCache = false
+	}
+
+	return nil
 }
 
 // String
@@ -152,7 +174,7 @@ func (ve *GoHtml) readImportFile(file string) []byte {
 // parse
 func (ve *GoHtml) parse(file string) (*template.Template, error) {
 	if file == "" {
-		return nil, errors.New("file cann't be empty")
+		return nil, errors.New("file can't be empty")
 	}
 
 	file = path.Join(ve.BasePath, file)
@@ -226,8 +248,9 @@ func initFuncs() {
 	TemplateFuncs["checked"] = checked   // output "checked" or ""
 	TemplateFuncs["nl2br"] = nl2br       // replace \n to <br/>
 	TemplateFuncs["jsvar"] = jsvar       // convert data to javascript variable, like var name = {...}
-	TemplateFuncs["import"] = importfile // import a temlate file, must be separate line
-	//TemplateFuncs["render"] = renderfile //
+	TemplateFuncs["import"] = importFile // import a temlate file, must be separate line
+	TemplateFuncs["fv"] = formValue      // call *http.Request.FormValue
+	TemplateFuncs["incl"] = include      // 
 }
 
 func (ve *GoHtml) renderfile(file string, data interface{}) template.HTML {
@@ -249,8 +272,27 @@ func (ve *GoHtml) renderfile(file string, data interface{}) template.HTML {
 // 	return template.HTML("TODO:render")
 // }
 
-func importfile(files ...string) template.HTML {
+func formValue(req *http.Request, name string) string {
+	if req == nil || name == "" {
+		return ""
+	}
+	return req.FormValue(name)
+}
+
+func importFile(files ...string) template.HTML {
 	return template.HTML("")
+}
+
+func include(values []string, v string) bool {
+	if values == nil || len(values) == 0 {
+		return false
+	}
+	for _, s := range values {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 func raw(text string) template.HTML {

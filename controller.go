@@ -88,6 +88,11 @@ func (c *Controller) findAction(ctx *HttpContext) (method *gotype.MethodInfo, er
 		return
 	}
 
+	actionName = actionName + strings.ToLower(ctx.Method)
+	if method, ok = c.Methods[actionName]; ok {
+		return
+	}
+
 	actionName = _defaultAction
 	if method, ok = c.Methods[actionName]; ok {
 		return
@@ -133,6 +138,7 @@ func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 	in[0] = c.Handler
 	in[1] = reflect.ValueOf(ctx)
 	out, err = safeCall(method.Func, in)
+
 	if err == nil {
 		if out[0].IsNil() {
 			result = nil

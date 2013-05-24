@@ -15,9 +15,8 @@ Roadmap
 * 0.2 configration framework. april 2013  
 * 0.3 web api server. april 2013  
 * 0.4 test on go 1.1. may 2013  
-* 0.5 cookie, session. may 2013 (we are here)  
-
-* 0.6 view engine. may 2013  
+* 0.5 cookie, session. may 2013 
+* 0.6 view engine. may 2013  (we are here)  
 * 0.7 watch & load config      
 * 0.8 custome error & 404 page 
 * 0.9 file upload    

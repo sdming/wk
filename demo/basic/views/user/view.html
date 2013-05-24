@@ -1,0 +1,77 @@
+{{set . "title" "View" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<style>
+.data-group {
+    margin-bottom:5px;	
+}
+.data-label 
+{    
+	width: 160px;
+	padding-top: 5px;
+	padding-left: 25px;
+}
+.data-value 
+{
+     margin-left:5px;
+}
+
+</style>
+{{end}}
+
+{{define "body" }}
+
+<div class="body">
+	<div class="container">
+	<ul class="breadcrumb">
+	  <li><a href="/user/index/">User</a> <span class="divider">/</span></li>
+	  <li class="active">View</li>
+	</ul>
+	<hr/>
+
+	<div id="content">
+		{{if .user}}
+
+		{{with .user }}
+
+	    <div class="data-horizontal well">
+	        <div class="data-group">
+	            <span class="data-label">Id:</span>
+	            <span class="data-value">{{.Id}}</span>	            
+	        </div>
+	        <div class="data-group">
+	           <span class="data-label">Name:</span>
+	           <span class="data-value">{{.Name}}</span>	        
+	        </div>
+	        <div class="data-group">
+	            <span class="data-label">Location:</span>
+	            <span class="data-value">{{locationtext .Location}}</span>
+	        </div>
+	        <div class="data-group">
+	            <span class="data-label">Gender:</span>
+	            <span class="data-value">{{.Gender}}</span>
+	        </div>
+	        <div class="data-group">
+	            <span class="data-label">Skills:</span>
+	            <span class="data-value">{{.Skills}}</span>
+	        </div>
+
+	        <div class="form-actions">
+				<a class="btn btn-primary" href="/user/edit/{{.Id}}">Update</a>
+			</div>
+
+	    </div>
+
+	    {{end }}
+	    {{else}}
+	    	<div class="alert">user doesn't exists</div>
+	    {{end }}
+	</div>
+
+</div>
+</div>
+
+{{end}}
+
+{{define "script" }}{{end}}

@@ -1,0 +1,46 @@
+
+/* Body 
+-------------------------------------------------- */
+body {
+  position: relative;
+  padding-top: 40px;
+}
+
+
+
+/* Footer
+-------------------------------------------------- */
+
+.footer {
+  text-align: center;
+  padding: 30px 0;
+  margin-top: 70px;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f5f5f5;
+}
+.footer p {
+  margin-bottom: 0;
+  color: #777;
+}
+
+/* elements
+-------------------------------------------------- */
+
+label.valid {
+	  width: 24px;
+	  height: 24px;
+	  background: url(/img/valid.png) center center no-repeat;
+	  display: inline-block;
+	  text-indent: -9999px;
+	}
+label.error {
+	font-weight: bold;
+	color: red;
+	padding: 2px 8px;
+	margin-top: 2px;
+}
+
+.section {
+position: relative;
+	margin: 5px 0;
+}

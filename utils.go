@@ -12,6 +12,7 @@ import (
 	"path"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -79,6 +80,10 @@ func safeCall(fn reflect.Value, args []reflect.Value) (result []reflect.Value, e
 				err = e
 			} else {
 				err = errors.New(fmt.Sprintf("call method %s fail, %s ", fn.Type(), x))
+			}
+
+			if LogLevel >= LogError {
+				Logger.Println(fn, string(debug.Stack()))
 			}
 		}
 

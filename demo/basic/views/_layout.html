@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+    <head>
+        {{raw "<!-- start: Meta -->"}}
+        <meta charset="utf-8">
+        <meta http-equiv="content-language" content="" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1,requiresActiveX=true">
+        <title>{{.title}}</title>
+        <meta name="description" content="GWK, Go Web Toolkit">
+        <meta name="viewport" content="width=device-width">
+        <meta name="application-name" content="Go Web Server Engine">
+        <meta name="msapplication-tooltip" content="Go Web Server Engine">
+        <meta name="author" content="buzzlight" />
+        <meta name="robots" content="noindex">  
+        {{raw "<!-- Tile icon for Win8 (144x144 + tile color) -->"}}
+        <meta name="msapplication-TileImage" content="/img/apple-touch-icon-114x114-precomposed.png">
+        <meta name="msapplication-TileColor" content="#222222">  
+        {{raw "<!-- end: Meta -->"}}
+     
+        {{raw "<!-- start: CSS -->"}}
+        <link id="bootstrap-style" href="/css/bootstrap.css" rel="stylesheet">
+        <link id="bootstrap-style-responsive" href="/css/bootstrap-responsive.css" rel="stylesheet">
+        <link id="base-style" href="/css/style.css" rel="stylesheet">
+        <link id="base-style-responsive" href="/css/style-responsive.css" rel="stylesheet">
+        {{raw "<!-- end: CSS -->"}}
+
+        {{raw "<!-- start: javascript -->"}}
+        <script src="/js/modernizr-2.6.2.min.js" ></script>    
+        <script src="/js/jquery-1.9.1.min.js"></script>
+        <script src="/js/bootstrap.js"></script>
+        {{raw "<!--[if lt IE 8]> <script src=\"/js/html5.js\"></script> <![endif]-->"}}
+        {{raw "<!--[if lt IE 8]> <script src=\"/js/IE8.js\"></script> <![endif]-->"}}
+        {{raw "<!--[if lt IE 8]> <script src=\"/js/selectivizr-1.0.2.min.js\"></script> <![endif]-->"}}
+        {{raw "<!-- end: javascript -->"}}
+
+        {{raw "<!-- start: Favicon -->"}}
+        {{raw "<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->"}}
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+        {{raw "<!-- end: Favicon -->"}}
+        {{raw "<!-- start: sitemap -->"}}
+        <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+        {{raw "<!-- end: sitemap -->"}}
+
+        {{raw "<!-- start: Mobile Specific -->"}}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta http-equiv="cleartype" content="on">
+        {{raw "<!-- For iOS web apps. Delete if not needed. https://github.com/h5bp/mobile-boilerplate/issues/94 -->"}}
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="Web Boilerplate">
+        {{raw "<!-- iPhone telephone -->"}}
+        <meta name="format-detection" content="telephone=no"/>
+
+        <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/apple-touch-icon-114x114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/apple-touch-icon-72x72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-57x57-precomposed.png">
+        {{raw "<!-- iPhone SPLASHSCREEN-->"}}
+        <link href="/img/startup-320x460.png" media="(device-width: 320px)" rel="apple-touch-startup-image">
+        {{raw "<!-- iPhone (Retina) SPLASHSCREEN-->"}}
+        <link href="/img/startup-640x920.png" media="(device-width: 320px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+        {{raw "<!-- iPad (portrait) SPLASHSCREEN-->"}}
+        <link href="/img/startup-768x1004.png" media="(device-width: 768px) and (orientation: portrait)" rel="apple-touch-startup-image">
+        {{raw "<!-- iPad (landscape) SPLASHSCREEN-->"}}
+        <link href="/img/startup-748x1024.png" media="(device-width: 768px) and (orientation: landscape)" rel="apple-touch-startup-image">
+        {{raw "<!-- iPad (Retina, portrait) SPLASHSCREEN-->"}}
+        <link href="/img/apple-touch-startup-image-1536x2008.png" media="(device-width: 1536px) and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+        {{raw "<!-- iPad (Retina, landscape) SPLASHSCREEN-->"}}
+        <link href="/img/apple-touch-startup-image-1496x2048.png" media="(device-width: 1536px)  and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+        {{raw "<!-- end: Mobile Specific -->"}}
+
+        {{template "head" .}}
+    <style>
+    
+    </style>
+
+    </head>
+    <body>
+        
+    {{raw "<!-- start: nav -->"}}
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/">Go Web Toolkit</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active">
+                <a href="/">Home</a>
+              </li>
+              <li class="">
+                <a href="#">Get started</a>
+              </li>
+              <li class="">
+                <a href="#">Project</a>
+              </li>                  
+              <li class="">
+                <a href="#">Document</a>
+              </li>
+              
+
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demo <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="/user/index/">User</a></li>                  
+                </ul>
+              </li>
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{raw "<!-- end: nav -->"}}
+
+    {{raw "<!-- start: main -->"}}
+    {{template "body" .}}
+    {{raw "<!-- end: main -->"}}
+
+    {{raw "<!-- start: footer -->"}}
+    <footer class="footer">
+      <div class="container">
+        <p style="display:none">Built with by <a href="https://github.com/sdming" target="_blank">sdming</a> .</p>
+        <p>Code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <p>© 2013 sdm. All rights reserved</p>
+      </div>
+    </footer>
+    {{raw "<!-- end: footer -->"}}
+
+    {{raw "<!-- start: scripts -->"}}
+    <script src="/js/plugins.js"></script>
+    <script src="/js/main.js"></script>
+    {{raw "<!-- end: scripts -->"}}
+
+    {{template "script" .}}
+
+    </body>
+</html>

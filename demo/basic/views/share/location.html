@@ -1,0 +1,8 @@
+{{$x := .}}
+
+<select id ="inputLocation" name="location">  
+	<option value=""  {{ eq "" $x | selected }}></option>
+  	{{range location}}
+  		<option value="{{.Value}}"  {{ eq .Value $x | selected }}>{{.Text}}</option>
+  	{{end}}
+</select>

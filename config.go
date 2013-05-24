@@ -89,6 +89,9 @@ type WebConfig struct {
 
 	// SessionDriver is the name of driver
 	SessionDriver string
+
+	// Debug is true if run in debug model
+	Debug bool
 }
 
 // String
