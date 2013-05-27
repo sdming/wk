@@ -376,7 +376,7 @@ func TestCompileFail(t *testing.T) {
 		"/query/{type}/{year}{month}{day}",
 		"/query/{{type}",
 		"/query/{type}}",
-		"/{query@#}",
+		"/{query@}",
 		"/{?query}",
 		"/query/{type}.html?{month}",
 		"/query/{type}.{month}html",

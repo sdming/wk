@@ -24,7 +24,7 @@
         {{raw "<!-- end: CSS -->"}}
 
         {{raw "<!-- start: javascript -->"}}
-        <script src="/js/modernizr-2.6.2.min.js" ></script>    
+        {{raw "<!-- <script src=\"/js/modernizr-2.6.2.min.js\" ></script>-->"}}   
         <script src="/js/jquery-1.9.1.min.js"></script>
         <script src="/js/bootstrap.js"></script>
         {{raw "<!--[if lt IE 8]> <script src=\"/js/html5.js\"></script> <![endif]-->"}}
@@ -80,7 +80,7 @@
         
     {{raw "<!-- start: nav -->"}}
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
           <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -92,23 +92,28 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active">
-                <a href="/">Home</a>
-              </li>
+                <a href="/doc/home">Home</a>
+              </li>             
               <li class="">
-                <a href="#">Get started</a>
-              </li>
-              <li class="">
-                <a href="#">Project</a>
+                <a href="https://github.com/sdming/wk">Github Project</a>
               </li>                  
-              <li class="">
-                <a href="#">Document</a>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Document <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="/doc/index">Index</a></li>
+                  <li><a href="/doc/start">Get started</a></li> 
+                  <li><a href="/doc/document">Document</a></li>                     
+                  <li><a href="https://github.com/sdming/wk/wiki" target="_blank">Wiki</a></li>                  
+                </ul>
               </li>
-              
-
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demo <b class="caret"></b></a>
                 <ul class="dropdown-menu">
+                  <li><a href="/doc/demo">Index</a></li>                  
                   <li><a href="/user/index/">User</a></li>                  
+                  <li><a href="#">Route</a></li>                  
+                  <li><a href="#">Session</a></li>                  
+                  <li><a href="#">Other</a></li>                  
                 </ul>
               </li>
 
@@ -118,6 +123,9 @@
       </div>
     </div>
     {{raw "<!-- end: nav -->"}}
+
+<a href="https://github.com/sdming/wk"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
 
     {{raw "<!-- start: main -->"}}
     {{template "body" .}}

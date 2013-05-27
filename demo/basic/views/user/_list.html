@@ -1,0 +1,24 @@
+<table class="table table-bordered" id="user-list">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Location</th>
+      <th>Gender</th>
+      <th>Skills</th>
+      <th>delete</th>
+    </tr>
+  </thead>
+  <tbody>
+  	{{range .users}}
+  	<tr>
+      <td><a href="/user/view/{{.Id}}">{{.Id}}</a></td>
+      <td>{{.Name}}</td>
+      <td><a href="/user/location/{{.Location}}">{{locationtext .Location}} </a></td>
+      <td>{{.Gender}}</td>
+      <td>{{.Skills}}</td>
+      <td><a class="delete-user" data-id="{{.Id}}" href="#">delete</td>
+    </tr>
+	{{end}}
+  </tbody>
+</table>

@@ -3,7 +3,7 @@
 -------------------------------------------------- */
 body {
   position: relative;
-  padding-top: 40px;
+
 }
 
 
@@ -43,4 +43,26 @@ label.error {
 .section {
 position: relative;
 	margin: 5px 0;
+}
+
+.jumbotron{
+  text-align: center;
+}
+
+.jumbotron h1 {
+  font-weight: bold;
+}
+
+.jumbotron p.subtitle {
+  font-size: 24px;
+  margin: 10px 0;
+}
+
+.masthead-links {
+  list-style: none;
+}
+
+.masthead-links li {
+  display: inline;
+  padding: 0 5px;
 }

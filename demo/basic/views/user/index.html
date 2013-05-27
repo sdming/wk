@@ -1,4 +1,4 @@
-{{set . "title" "Index" }}
+{{set . "title" "Demo - User Index" }}
 {{import "_layout.html" }}
 
 {{define "head" }}{{end}}
@@ -17,29 +17,8 @@
 			<a href="/user/add/">[Add new User]</a>
 		<div>
 
-		<div class="section">
-		<table class="table table-bordered">
-		  <thead>
-		    <tr>
-		      <th>#</th>
-		      <th>Name</th>
-		      <th>Location</th>
-		      <th>Gender</th>
-		      <th>Skills</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		  	{{range .users}}
-		  	<tr>
-		      <td><a href="/user/view/{{.Id}}">{{.Id}}</a></td>
-		      <td>{{.Name}}</td>
-		      <td><a href="/user/location/{{.Location}}">{{locationtext .Location}} </a></td>
-		      <td>{{.Gender}}</td>
-		      <td>{{.Skills}}</td>
-		    </tr>
-			{{end}}
-		  </tbody>
-		</table>
+		<div class="section" id="users">
+		{{partial "user/_list.html" .}}
 		<div>
 	</div>
 
@@ -48,4 +27,32 @@
 
 {{end}}
 
-{{define "script" }}{{end}}
+{{define "script" }}
+
+<script type="text/javascript">
+
+$(document).ready(function(){ 
+
+$("#users").on("click", ".delete-user", function(event){
+  $.ajax({
+  	url: "/user/delete/"+ $(this).data("id"),
+  	dataType: "json",
+	}).success(function (data, status, jqXHR) {
+	 	if (data.Code == "") {
+	 		$("#user-list").load("/user/all/");
+	 	} 
+	 	else {
+	 		alert(data.Message);
+	 	}
+	}).complete(function (jqXHR, status) {
+	}).error(function (jqXHR, status, error) {
+	 	alert(error)
+	});
+	return false;
+});
+
+}); 
+
+</script>
+
+{{end}}

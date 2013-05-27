@@ -31,16 +31,13 @@ go 1.1
 Usage
 ---
 
-go get github.com/sdming/pathexp  
 go get github.com/sdming/kiss  
 go get github.com/sdming/mcache
 go get github.com/sdming/wk  
 
 Document
 ---
-english is bad, take time to translate documents to english.  
-
-
+Take time to translate documents to english.  
 
 Getting Started
 ---
@@ -325,8 +322,23 @@ Call On() to listen events
 
 View engine
 ---
-TODO:
 
+Template Funcs  
+* eq: 	equal   
+* eqs: 	compare as string  
+* get:	greater  
+* le:	less  
+* set:	set map[string]interface{}
+* raw:	unescaped html  
+* incl:	include or not
+* selected:	return "selected" or ""
+* checked: 	return "checked" or ""
+* nl2br:	replace "\n" with "<br/>" 
+* jsvar:	create javascript variable, like var name = {...}
+* import:	import a template file
+* partial:	call a template
+
+you can find examples in folder "./test/views/" or "./demo/basic/views/"
 
 Example
 ---
@@ -366,6 +378,11 @@ TODO:
 * 	session example  
 	how to add, get,remove... session
 	file: ./demo/basic/controller/session.go     
+
+* 	view example  
+	how to use viewengine  
+	file: ./demo/basic/controller/user.go   
+
 
 ORM
 ---

@@ -13,19 +13,21 @@ import (
 	"github.com/sdming/wk"
 	"log"
 	"strings"
-	"time"
 )
 
 func init() {
 	userRepo = &UserRepository{
 		users: make([]User, 0),
 	}
-	userRepo.Add(User{
-		Name:     "Sheldon",
-		Location: "us",
-		Gender:   "male",
-		Skills:   []string{"Go", "Java"},
-	})
+
+	for i := 0; i < 10; i++ {
+		userRepo.Add(User{
+			Name:     "Sheldon",
+			Location: "us",
+			Gender:   "male",
+			Skills:   []string{"Go", "Java"},
+		})
+	}
 
 	// demo: how to add template func
 	wk.TemplateFuncs["location"] = getLocations
@@ -141,9 +143,6 @@ func RegisterUserRoute(srv *wk.HttpServer) {
 	for _, skill := range skillConfig {
 		skills = append(skills, wk.HtmlOption{skill, skill})
 	}
-
-	log.Println("locations", locations)
-	log.Println("skills", skills)
 }
 
 func locationText(v string) string {
@@ -196,6 +195,12 @@ func (uc *UserController) Index(ctx *wk.HttpContext) (result wk.HttpResult, err 
 	return wk.View("user/index.html"), nil
 }
 
+// get: /user/all/
+func (uc *UserController) All(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	ctx.ViewData["users"] = userRepo.All()
+	return wk.View("user/_list.html"), nil
+}
+
 // get: /user/exists/sheldon
 func (uc *UserController) Exists(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	valid := true
@@ -210,8 +215,6 @@ func (uc *UserController) Delete(ctx *wk.HttpContext) (result wk.HttpResult, err
 	var res ApiRes
 
 	if id, ok := ctx.RouteData.Int("arg"); ok {
-		//take long time
-		time.Sleep(time.Second)
 		res = ApiRes{
 			Code: "",
 			Data: userRepo.Delete(id),
