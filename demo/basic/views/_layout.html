@@ -17,10 +17,11 @@
         {{raw "<!-- end: Meta -->"}}
      
         {{raw "<!-- start: CSS -->"}}
-        <link id="bootstrap-style" href="/css/bootstrap.css" rel="stylesheet">
-        <link id="bootstrap-style-responsive" href="/css/bootstrap-responsive.css" rel="stylesheet">
-        <link id="base-style" href="/css/style.css" rel="stylesheet">
-        <link id="base-style-responsive" href="/css/style-responsive.css" rel="stylesheet">
+        <link href="/css/bootstrap.css" rel="stylesheet">
+        <link href="/css/bootstrap-responsive.css" rel="stylesheet">
+        <link href="/css/prettify.css" type="text/css" rel="stylesheet">
+        <link href="/css/style.css" rel="stylesheet">
+        <link href="/css/style-responsive.css" rel="stylesheet">
         {{raw "<!-- end: CSS -->"}}
 
         {{raw "<!-- start: javascript -->"}}
@@ -100,7 +101,6 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Document <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="/doc/index">Index</a></li>
                   <li><a href="/doc/start">Get started</a></li> 
                   <li><a href="/doc/document">Document</a></li>                     
                   <li><a href="https://github.com/sdming/wk/wiki" target="_blank">Wiki</a></li>                  
@@ -109,11 +109,12 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demo <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="/doc/demo">Index</a></li>                  
-                  <li><a href="/user/index/">User</a></li>                  
-                  <li><a href="#">Route</a></li>                  
-                  <li><a href="#">Session</a></li>                  
-                  <li><a href="#">Other</a></li>                  
+                  
+                  <li><a href="/doc/routedemo">Route</a></li>                  
+                  <li><a href="/doc/basicdemo">Controller </a></li>          
+                  <li><a href="/user/index">User</a></li>                  
+                  <li><a href="/doc/sessiondemo">Session</a></li>                  
+                  <li><a href="/doc/otherdemo">Other</a></li>                  
                 </ul>
               </li>
 
@@ -124,7 +125,7 @@
     </div>
     {{raw "<!-- end: nav -->"}}
 
-<a href="https://github.com/sdming/wk"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+<a href="https://github.com/sdming/wk"><img style="position: absolute; top: 0; right: 0; border: 0;" src="/img/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
 
 
     {{raw "<!-- start: main -->"}}
@@ -134,16 +135,43 @@
     {{raw "<!-- start: footer -->"}}
     <footer class="footer">
       <div class="container">
-        <p style="display:none">Built with by <a href="https://github.com/sdming" target="_blank">sdming</a> .</p>
-        <p>Code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <p>
+          Built on <a href="http://twitter.github.io/bootstrap/" target="_blank">Twitter Bootstrap </a>,
+          Code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>, 
+          documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
         <p>© 2013 sdm. All rights reserved</p>
       </div>
     </footer>
+
+
+    <div class="modal hide" id="apiModal">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Call Api</h3>
+      </div>
+      <div class="modal-body">
+        <p>
+            link: <span class="api-link" >#</span>
+        </p>
+       
+        <div>
+            <pre class="api-data"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="pull-left api-status" >loading...</span>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div>
+
+
     {{raw "<!-- end: footer -->"}}
 
     {{raw "<!-- start: scripts -->"}}
     <script src="/js/plugins.js"></script>
     <script src="/js/main.js"></script>
+    <script src="/js/prettify.js"></script>
+    <script src="/js/lang-go.js"></script>
     {{raw "<!-- end: scripts -->"}}
 
     {{template "script" .}}

@@ -65,7 +65,6 @@ func BigPipe(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 		go func(index int) {
 			defer cr.Wait.Done()
 
-			//d := 3 + rand.New(rand.NewSource(time.Now().UnixNano())).Intn(10)
 			d := 3 + rand.Intn(10)
 			time.Sleep(time.Duration(d) * time.Second)
 

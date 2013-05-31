@@ -1,0 +1,249 @@
+{{set . "title" "Other Demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<style>
+
+</style>
+
+{{end}}
+
+{{define "body" }}
+
+<div class="container">
+    <div id="dynamicTopNavBar">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div>
+                    <ul class="nav">
+                        <li class=""><a href="#demo-qrcode">QrCode</a></li>
+                        <li><a href="#demo-filestream">File Stream</a></li>
+                        <li><a href="#demo-bundle">File Bundling</a></li>
+                        <li><a href="#demo-bigpipe">BigPipe</a></li>
+                        <li><a href="#demo-compress">Compress</a></li>
+                        <li><a href="#demo-event">Event</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+
+    <section id="demo-qrcode">
+        <div class="page-header">
+            <h3>QrCode</h3>
+        </div>
+        <p>
+            How to write a http result to return qrcode image, it need package "code.google.com/p/rsc/qr"
+        </p>
+         <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/qr.go">/demo/basic/model/qr.go</a>
+      
+        </p>
+        <pre class="prettyprint lang-go">
+
+func (qrcode *QrCodeResult) Execute(ctx *wk.HttpContext) error {
+
+	c, err := qr.Encode(qrcode.Text, qr.M)
+	if err != nil {
+		log.Println("QrCodeResult Execute Error", err)
+		return err
+	}
+	png := c.PNG()
+	//ioutil.WriteFile(qrcode.Text+"_demo.png", png, 0666)
+	ctx.ContentType("image/png")
+	ctx.Write(png)
+
+	return nil
+}
+
+        </pre>
+        <p>
+            click: <a href="/qr/show/?text=hello" target="_blank">/qr/show/?text=hello</a>
+        </p>
+    </section>
+
+    <section id="demo-filestream">
+        <div class="page-header">
+            <h3>File Stream</h3>
+        </div>
+        <p>How to return a text file</p>
+         <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>
+      
+        </p>
+        <pre class="prettyprint lang-go">
+
+func FileHelloTime(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	s := "hello, time is " + time.Now().String()
+	reader := strings.NewReader(s)
+	return wk.FileStream("", "hellotime.txt", reader, time.Now()), nil
+}
+        </pre>
+        <p>
+            click: <a href="/file/time.txt" target="_blank">/file/time.txt</a>
+        </p>
+    </section>
+
+    <section id="demo-bundle">
+        <div class="page-header">
+            <h3>File bundling</h3>
+        </div>
+        <p>
+            How to bundle files
+        </p>
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>
+      
+        </p>
+        <pre class="prettyprint lang-go">
+
+func FileJsBundling(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	files := []string{"js/main.js", "js/plugins.js"}
+	bundle := make([]string, len(files))
+
+	for i := 0; i < len(files); i++ {
+		bundle[i] = filepath.Join(serverPublicBase, files[i])
+	}
+	return &wk.BundleResult{Files: bundle}, nil
+}
+        </pre>
+        <p>
+            click: <a href="/js/js_bundle.js" target="_blank">/js/js_bundle.js</a>
+        </p>
+    </section>
+
+    <section id="demo-bigpipe">
+        <div class="page-header">
+            <h3>BigPipe</h3>
+        </div>
+        <p>
+            How to simulation long-pull or BigPipe and how to flush response
+        </p>
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/bigpipe.go">/demo/basic/model/bigpipe.go</a>
+           ; <a href="https://github.com/sdming/wk/blob/master/chan.go">/chan.go</a>
+        </p>
+        <pre class="prettyprint lang-go">
+
+l := 5
+
+cr := &wk.ChanResult{
+	Wait:        sync.WaitGroup{},
+	Chan:        make(chan string, l),
+	ContentType: "text/html",
+	Start:       []byte(start),
+	End:         []byte(end),
+}
+
+for i := 0; i < l; i++ {
+	cr.Wait.Add(1)
+	go func(index int) {
+		defer cr.Wait.Done()
+
+		d := 3 + rand.Intn(10)
+		time.Sleep(time.Duration(d) * time.Second)
+
+		cr.Chan <- fmt.Sprintf(`
+	&lt;script&gt;
+	    p("goroutine %d delay %d")
+	&lt;/script&gt;
+`, index, d)
+	}(i)
+}
+
+        </pre>
+        <p>
+            click: <a href="/bigpipe/test.html" target="_blank">/bigpipe/test.html</a>
+        </p>
+    </section>
+
+    <section id="demo-compress">
+        <div class="page-header">
+            <h3>Compress </h3>
+        </div>
+        <p>
+            How to write a Processor to compress http response
+            <span class="label label-warning">bugs</span>
+        </p>
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/compress.go">/compress.go</a>
+        </p>
+        <pre class="prettyprint lang-go">
+
+server.Processes.InsertBefore("_render", wk.NewCompressProcess("compress_test", "*", "/compress/"))
+
+        </pre>
+        <p>
+            click: <a href="/compress/bootstrap.css">/compress/bootstrap.css</a> or 
+            <a href="/compress/bootstrap.js">/compress/bootstrap.js</a> or 
+            <a href="/compress/go.png">/compress/go.png</a> or 
+            <a href="/compress/a.txt">/compress/a.txt</a>
+        </p>
+    </section>
+
+    <section id="demo-event">
+        <div class="page-header">
+            <h3>Event</h3>
+        </div>
+        <p>
+            How to listen events
+        </p>
+
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/event.go">/demo/basic/model/event.go</a>
+        </p>
+        <pre class="prettyprint lang-go">
+
+wk.OnFunc("*", "*", eventTraceFunc)
+
+func eventTraceFunc(e *wk.EventContext) {
+	//your code
+}
+        </pre>
+        <p>
+            click: <a href="#page-profiler-modal" id="btn-event-demo" class="btn btn-info" >View Page Profiler</a>
+        </p>
+    </section>
+    <div id="page-profiler-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="profiler-modal-label"
+        aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="profiler-modal-label">
+                Page Profiler</h3>
+        </div>
+        <div class="modal-body">
+            <pre id="page-profiler-text"></pre>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">
+                Close</button>           
+        </div>
+    </div>
+
+
+</div>
+
+
+{{end}}
+
+{{define "script" }}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        prettyPrint();
+        setScrollTopNav();
+
+        $("#btn-event-demo").click(function () {
+            $('#page-profiler-modal').modal();
+            $('#page-profiler-modal #page-profiler-text').text(pageProfiler);
+        });
+    });
+
+
+
+</script>
+ {{end}}

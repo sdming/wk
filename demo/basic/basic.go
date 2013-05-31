@@ -23,7 +23,7 @@ func main() {
 		return
 	}
 
-	controller.RegisterDemoRoute(server)
+	controller.RegisterBasicRoute(server)
 	controller.RegisterUserRoute(server)
 	controller.RegisterDocRoute(server)
 
@@ -34,12 +34,12 @@ func main() {
 		model.RegisterQrRoute(server)
 	}
 
-	if enableEventTrace := false; enableEventTrace {
+	if enableEventTrace := true; enableEventTrace {
 		model.RegisterEventTrace(server)
 	}
 
-	if enableCompress := false; enableCompress {
-		server.Processes.InsertBefore("_render", wk.NewCompressProcess("compress_test", "*", "/js/"))
+	if enableCompress := true; enableCompress {
+		server.Processes.InsertBefore("_render", wk.NewCompressProcess("compress_test", "*", "/compress/"))
 	}
 
 	if enableFile := true; enableFile {

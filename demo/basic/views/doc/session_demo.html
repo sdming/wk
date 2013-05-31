@@ -1,0 +1,169 @@
+{{set . "title" "Session Demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<style>
+#dynamicTopNavBar 
+{
+    margin:0 auto;
+}
+
+</style>
+
+{{end}}
+
+{{define "body" }}
+
+<div class="container">
+    <div id="dynamicTopNavBar">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div>
+                    <ul class="nav">
+                        <li class=""><a href="#session-id">Id</a></li>
+                        <li><a href="#session-add">Add</a></li>
+                        <li><a href="#session-get">Get</a></li>
+                        <li><a href="#session-set">Set</a></li>
+                        <li><a href="#session-remove">Remove</a></li>
+                        <li><a href="#session-abandon">Abandon</a></li>
+                        <li><a href="#session-keys">Keys</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <p class="docs-example">
+        source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/controller/session.go">/demo/basic/controller/session.go</a>
+   </p>
+
+    <section id="session-id">
+        <div class="page-header">
+            <h3>Get session id</h3>
+        </div>
+        <p>
+            Get current session id
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+id := ctx.SessionId()
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/id">/session/id</a>
+        </p>
+    </section>
+
+    <section id="session-add">
+        <div class="page-header">
+            <h3>Add Session</h3>
+        </div>
+        <p>Add key-value to session</p>
+        <pre class="prettyprint linenums lang-go">
+
+ok, err := ctx.Session.Add(ctx.FV("k"), ctx.FV("v"))
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/add?k=test&v=101">/session/add?k=test&v=101</a>
+        </p>
+    </section>
+
+    <section id="session-get">
+        <div class="page-header">
+            <h3>Get Session</h3>
+        </div>
+        <p>
+            Get key-value from session
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+v, _, err := ctx.Session.Get(ctx.FV("k"))
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/get?k=test">/session/get?k=test</a>
+        </p>
+    </section>
+
+    <section id="session-set">
+        <div class="page-header">
+            <h3>Set Session</h3>
+        </div>
+        <p>
+            Set session
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+err := ctx.Session.Set(ctx.FV("k"), ctx.FV("v"))
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/set?k=test&v=101">/session/set?k=test&v=101</a>
+        </p>
+    </section>
+
+    <section id="session-remove">
+        <div class="page-header">
+            <h3>Remove Session</h3>
+        </div>
+        <p>
+            Remove key from session
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+err := ctx.Session.Remove(ctx.FV("k"))
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/remove?k=test">/session/remove?k=test</a>
+        </p>
+    </section>
+
+    <section id="session-abandon">
+        <div class="page-header">
+            <h3>Abandon Session</h3>
+        </div>
+        <p>
+            Abandon session
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+err := ctx.Session.Abandon()
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/abandon">/session/abandon</a>
+        </p>
+    </section>
+
+    <section id="session-keys">
+        <div class="page-header">
+            <h3>Session Keys</h3>
+        </div>
+        <p>
+            Get all session keys
+        </p>
+        <pre class="prettyprint linenums lang-go">
+	        
+keys, err := ctx.Session.Keys()
+        </pre>
+        <p>
+            click: <a class="api-link" href="/session/keys">/session/keys</a>
+        </p>
+    </section>
+
+</div>
+
+
+{{end}}
+
+{{define "script" }}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        prettyPrint();
+        setScrollTopNav();
+    });
+
+
+
+</script>
+ {{end}}

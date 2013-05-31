@@ -20,14 +20,12 @@ func init() {
 		users: make([]User, 0),
 	}
 
-	for i := 0; i < 10; i++ {
-		userRepo.Add(User{
-			Name:     "Sheldon",
-			Location: "us",
-			Gender:   "male",
-			Skills:   []string{"Go", "Java"},
-		})
-	}
+	userRepo.Add(User{
+		Name:     "Sheldon",
+		Location: "us",
+		Gender:   "male",
+		Skills:   []string{"Go", "Java"},
+	})
 
 	// demo: how to add template func
 	wk.TemplateFuncs["location"] = getLocations
@@ -129,11 +127,11 @@ var locations []wk.HtmlOption
 var skills []wk.HtmlOption
 
 func RegisterUserRoute(srv *wk.HttpServer) {
-	//server = srv
 
 	// url: /user/xxx/xxx
 	// route to UserController
-	srv.RouteTable.Path("/user/{action}/{arg}").ToController(NewUserController())
+	// demo how to route use regexp
+	srv.RouteTable.Regexp("*", "^/user/?(?P<action>[[:alnum:]]+)?/?(?P<arg>[[:alnum:]]+)?/?").ToController(NewUserController())
 
 	locations = []wk.HtmlOption{}
 	srv.Config.AppConfig.MustChild("locations").Value(&locations)
@@ -178,6 +176,12 @@ func getSkills() []wk.HtmlOption {
 // func (uc *UserController) Default(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 // 	return uc.Index(ctx)
 // }
+
+// get: /user
+func (uc *UserController) Default(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	ctx.ViewData["users"] = userRepo.All()
+	return wk.View("user/index.html"), nil
+}
 
 // get: /user/location/america
 func (uc *UserController) Location(ctx *wk.HttpContext) (result wk.HttpResult, err error) {

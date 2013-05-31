@@ -51,6 +51,26 @@ func (uc *DocController) Demo(ctx *wk.HttpContext) (result wk.HttpResult, err er
 	return wk.View("doc/demo.html"), nil
 }
 
+// get: /doc/sessiondemo
+func (uc *DocController) SessionDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.View("doc/session_demo.html"), nil
+}
+
+// get: /doc/otherdemo
+func (uc *DocController) OtherDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.View("doc/other_demo.html"), nil
+}
+
+// get: /doc/basicdemo
+func (uc *DocController) BasicDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.View("doc/basic_demo.html"), nil
+}
+
+// get: /doc/routedemo
+func (uc *DocController) RouteDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.View("doc/route_demo.html"), nil
+}
+
 // get: /doc/home
 func (uc *DocController) Home(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	return wk.View("doc/home.html"), nil

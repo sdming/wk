@@ -1,0 +1,302 @@
+{{set . "title" "Route Demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<style>
+
+</style>
+
+{{end}}
+
+{{define "body" }}
+
+<div class="container">
+
+    <section >
+        <div class="page-header">
+            <h3>Route Demo</h3>
+        </div>
+        <p>
+            This is a route demo.
+        </p>
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/data.go">/demo/basic/model/data.go</a>
+        </p>       
+    </section>
+
+    <section >
+        
+        <p>
+            Route to func (*wk.HttpContext) (wk.HttpResult, error)
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+    if count, ok := ctx.RouteData.Int("count"); !ok {
+        err = errors.New("parameter invalid:" + "count")
+    } else {
+        data := DataTop(count)
+        result = wk.Json(data)
+    }
+    return
+}
+
+server.RouteTable.Get("/data/top/{count}").To(DataTopHandle)
+
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/top/10">/data/top/10</a>
+        </p>
+    </section>
+    <hr>
+
+       <section >
+        
+        <p>
+            Return content-type according to accepts
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func DataType() Data {
+    return Data{
+        Str:   "string",
+        Uint:  64,
+        Int:   32,
+        Float: 3.14,
+        Byte:  8,
+    }
+}
+
+server.RouteTable.Get("/data/datatype?").ToFunc(DataType)
+
+        </pre>
+        <p>
+            click: <a class="api-link" data-accepts="application/json, text/json" href="/data/datatype">json /data/datatype</a> ,
+             <a class="api-link" data-accepts="application/xml, text/xml" href="/data/datatype">xml /data/datatype</a>
+        </p>
+    </section>
+    <hr>
+
+    <section >
+       
+        <p>Route to a function, convert parameter by index(p0,p1,p2...)</p>
+        <pre class="prettyprint linenums lang-go">
+
+func DataByInt(i int) *Data {
+    if i < 0 {
+        i = 0
+    }
+    return newData(i)
+}
+
+server.RouteTable.Get("/data/int/{p0}?").ToFunc(DataByInt)
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/int/1">/data/int/1</a>
+        </p>
+    </section>
+    <hr>
+    <section>
+       
+        <p>
+            Route to a function
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func DataByIntRange(start, end int) []*Data {
+    data := make([]*Data, 2)
+    data[0] = newData(start)
+    data[1] = newData(end)
+    return data
+}
+
+server.RouteTable.Get("/data/range/{p0}-{p1}").ToFunc(DataByIntRange)
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/range/1-9">/data/range/1-9</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+       
+        <p>
+            Return xml
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+server.RouteTable.Get("/data/int/{p0}/xml").ToFunc(DataByInt).ReturnXml()
+
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/int/1/xml">/data/int/1/xml</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+      
+        <p>
+            Return json
+        </p>
+        <pre class="prettyprint linenums lang-go">
+server.RouteTable.Get("/data/int/{p0}/json").ToFunc(DataByInt).ReturnJson()
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/int/1/json">/data/int/1/json</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+        <p>
+            return custome formatted data
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func formatKson(ctx *wk.HttpContext, x interface{}) (wk.HttpResult, bool) {
+    b, _ := kson.Marshal(x)
+    return wk.Content(string(b), "text/plain"), true
+}
+
+server.RouteTable.Get("/data/int/{p0}/kson").ToFunc(DataByInt).Return(formatKson)
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/int/1/kson">/data/int/1/kson</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+        <p>
+            Route to a function, convert parameter by name
+        </p>
+        <pre class="prettyprint linenums lang-go">
+	        
+server.RouteTable.Get("/data/name/{id}").ToFunc(DataByInt).
+        BindByNames("id")
+
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/name/1">/data/name/1</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+     
+        <p>
+            Route to a function, convert parameter by name
+        </p>
+        <pre class="prettyprint linenums lang-go">
+	        
+server.RouteTable.Get("/data/namerange/{start}-{end}").ToFunc(DataByIntRange).
+        BindByNames("start", "end")
+
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/namerange/1-9">/data/namerange/1-9</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+        <p>
+            Route to a function, convert parameter by name
+        </p>
+        <pre class="prettyprint linenums lang-go">
+server.RouteTable.Get("/data/namerange/").ToFunc(DataByIntRange).
+        BindByNames("start", "end")
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/namerange/?start=1&end=9">/data/namerange/?start=1&end=9</a>
+        </p>
+    </section>
+    <hr>
+    <section >
+        <p>
+            Route POST to function, build struct parameter from form
+        </p>
+        <pre class="prettyprint linenums lang-go">
+func DataPost(data Data) string {
+    return data.String()
+}
+
+server.RouteTable.Post("/data/post?").ToFunc(DataPost).BindToStruct()
+        </pre>
+        <p>
+            click: <a class="api-link" data-method="POST"  data-data='"Str":"string:1","Uint":100,"Int":10,"Float":1.1,"Byte":1}' href="/data/post">POST /data/post</a>
+        </p>
+    </section>
+    <hr>
+
+    <section >
+        <p>
+            Route POST to function, build struct parameter from form
+        </p>
+        <pre class="prettyprint linenums lang-go">
+func DataPostPtr(data *Data) string {
+    return data.String()
+}
+
+server.RouteTable.Post("/data/postptr?").ToFunc(DataPostPtr).BindToStruct()
+        </pre>
+        <p>
+            click: <a class="api-link" data-method="POST"  data-data='"Str":"string:1","Uint":100,"Int":10,"Float":1.1,"Byte":1}' href="/data/postptr">POST /data/postptr</a>
+        </p>
+    </section>
+
+    <hr>
+
+    <section >
+        <p>
+            route DELETE 
+        </p>
+        <pre class="prettyprint linenums lang-go">
+func DataDelete(i int) string {
+    return fmt.Sprintf("delete %d", i)
+}
+
+server.RouteTable.Delete("/data/delete/{p0}").ToFunc(DataDelete)
+        </pre>
+        <p>
+            click: <a class="api-link" data-method="DELETE" href="/data/delete/1">/data/delete/1</a>
+        </p>
+    </section>
+
+    <hr>
+
+    <section >
+        <p>
+            test diffrent parameter type
+        </p>
+        <pre class="prettyprint linenums lang-go">
+func DataSet(s string, u uint64, i int, f float32, b byte) *Data {
+    return &Data{
+        Str:   s,
+        Uint:  u,
+        Int:   i,
+        Float: f,
+        Byte:  b,
+    }
+}
+
+server.RouteTable.Get("/data/set?").ToFunc(DataSet).
+        BindByNames("str", "uint", "int", "float", "byte")
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/set?str=string&uint=1024&int=32&float=3.14&byte=64">/data/set?str=string&uint=1024&int=32&float=3.14&byte=64</a>
+        </p>
+    </section> 
+
+    <hr>
+
+</div>
+
+
+{{end}}
+
+{{define "script" }}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        prettyPrint();
+        setScrollTopNav();
+    });
+
+</script>
+ {{end}}

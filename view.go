@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"mime"
 	"path/filepath"
-	"strconv"
 )
 
 // ViewResult
@@ -38,7 +37,7 @@ func (v *ViewResult) Execute(ctx *HttpContext) error {
 	}
 
 	ctx.SetHeader(HeaderContentType, v.Type())
-	ctx.SetHeader(HeaderContentLength, strconv.Itoa(len(buffer.Bytes())))
+	//ctx.SetHeader(HeaderContentLength, strconv.Itoa(len(buffer.Bytes())))
 	_, err = buffer.WriteTo(ctx.Resonse)
 	return err
 }

@@ -82,11 +82,6 @@ func DataPostPtr(data *Data) string {
 	return data.String()
 }
 
-func DataPostWithError(data Data) (int, error) {
-	fmt.Println(data)
-	return 0, nil
-}
-
 func (d *Data) String() string {
 	if d == nil {
 		return "<nil>"
@@ -96,7 +91,6 @@ func (d *Data) String() string {
 }
 
 func DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
-
 	if count, ok := ctx.RouteData.Int("count"); !ok {
 		err = errors.New("parameter invalid:" + "count")
 	} else {
@@ -106,11 +100,26 @@ func DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	return
 }
 
+func DataType() Data {
+	return Data{
+		Str:   "string",
+		Uint:  64,
+		Int:   32,
+		Float: 3.14,
+		Byte:  8,
+	}
+}
+
 func RegisterDataRoute(server *wk.HttpServer) {
 	// url: /data/top/10
 	// func: DataTopHandle(ctx *wk.HttpContext) (result wk.HttpResult, err error)
 	// route to func (*wk.HttpContext) (wk.HttpResult, error)
 	server.RouteTable.Get("/data/top/{count}").To(DataTopHandle)
+
+	// url: /data/datatype
+	// func: DataType() Data
+	// return content-type according to accepts
+	server.RouteTable.Get("/data/datatype?").ToFunc(DataType)
 
 	// url: /data/int/1
 	// func: DataByInt(i int) *Data

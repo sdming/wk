@@ -12,7 +12,7 @@ type QrCodeResult struct {
 	Text string
 }
 
-//
+// Execute write qrcode image to response
 func (qrcode *QrCodeResult) Execute(ctx *wk.HttpContext) error {
 
 	c, err := qr.Encode(qrcode.Text, qr.M)

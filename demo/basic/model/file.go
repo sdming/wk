@@ -8,7 +8,6 @@ package model
 
 import (
 	"github.com/sdming/wk"
-	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -32,7 +31,6 @@ func FileHelloTime(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	return wk.FileStream("", "hellotime.txt", reader, time.Now()), nil
 }
 
-// TODO: close reader?
 func FileJsBundling(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	files := []string{"js/main.js", "js/plugins.js"}
 	bundle := make([]string, len(files))
@@ -40,7 +38,5 @@ func FileJsBundling(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	for i := 0; i < len(files); i++ {
 		bundle[i] = filepath.Join(serverPublicBase, files[i])
 	}
-	log.Println("FileJsBundling", bundle)
 	return &wk.BundleResult{Files: bundle}, nil
-
 }

@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sdming/wk"
-	"log"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -24,7 +22,14 @@ const (
 	eventFlashKey string = ":eventTrace"
 )
 
+//var re = regexp.MustCompile("^/doc/otherdemo")
+
 func eventTraceFunc(e *wk.EventContext) {
+	path := strings.ToLower(e.Context.RequestPath)
+	if !strings.HasPrefix(path, "/doc/otherdemo") {
+		return
+	}
+
 	var events []EventTrace
 
 	if v, ok := e.Context.GetFlash(eventFlashKey); ok {
@@ -40,7 +45,7 @@ func eventTraceFunc(e *wk.EventContext) {
 	})
 
 	if e.Name == "end_request" {
-		printTrace(e.Context.Request.URL, events)
+		printTrace(e.Context, events)
 		return
 	}
 
@@ -48,7 +53,7 @@ func eventTraceFunc(e *wk.EventContext) {
 
 }
 
-func printTrace(request *url.URL, trace []EventTrace) {
+func printTrace(ctx *wk.HttpContext, trace []EventTrace) {
 
 	if len(trace) == 0 {
 		return
@@ -60,23 +65,28 @@ func printTrace(request *url.URL, trace []EventTrace) {
 	offset := trace[0].Timestamp
 
 	buffer.WriteString("\n")
-	buffer.WriteString(fmt.Sprintf("url:%v \n", request))
-	buffer.WriteString(strings.Repeat("-", 10))
-	buffer.WriteString("\n")
+	//buffer.WriteString(fmt.Sprintf("url:%v \n", ctx.Request.URL))
+	//buffer.WriteString(strings.Repeat("-", 10))
+	//buffer.WriteString("\n")
+
+	buffer.WriteString("<script>\n")
+	buffer.WriteString("var pageProfiler = \"")
 	for _, t := range trace {
 		if strings.HasPrefix(t.Name, "end_") && indent > 0 {
 			indent--
 		}
 
 		buffer.WriteString(strings.Repeat(s, indent))
-		buffer.WriteString(fmt.Sprintf("%s\t %s\t %d \n", t.Module, t.Name, t.Timestamp-offset))
+		//buffer.WriteString(fmt.Sprintf("%s\t %s\t %d \n", t.Module, t.Name, t.Timestamp-offset))
+		buffer.WriteString(fmt.Sprintf("%s\t %s\t %d ns \\n", t.Module, t.Name, t.Timestamp-offset))
 
 		if strings.HasPrefix(t.Name, "start_") {
 			indent++
 		}
 	}
-	buffer.WriteString(strings.Repeat("-", 10))
-	buffer.WriteString("\n")
-
-	log.Println(buffer.String())
+	//buffer.WriteString(strings.Repeat("-", 10))
+	//buffer.WriteString("\n")
+	buffer.WriteString("\";")
+	buffer.WriteString("\n</script>\n")
+	ctx.Write(buffer.Bytes())
 }

@@ -4,19 +4,87 @@
 package pathexp
 
 import (
+	//"bytes"
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
 )
+
+type Matcher interface {
+	Match(expr string) (matched bool, submatch [][2]string)
+}
+
+type RegexpMatch struct {
+	pattern        string
+	re             *regexp.Regexp
+	subNames       []string
+	subCount       int
+	subNameedCount int
+}
+
+func RegexpCompile(pattern string) (*RegexpMatch, error) {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	subNames := re.SubexpNames()
+	count := 0
+	for _, s := range subNames {
+		if s != "" {
+			count++
+		}
+	}
+	return &RegexpMatch{
+		pattern:        pattern,
+		re:             re,
+		subNames:       subNames,
+		subCount:       len(subNames),
+		subNameedCount: count,
+	}, nil
+}
+
+func (re *RegexpMatch) Match(expr string) (matched bool, submatch [][2]string) {
+	var data [][]string = re.re.FindAllStringSubmatch(expr, -1)
+
+	if data == nil || len(data) != 1 {
+		return false, nil
+	}
+	if len(data[0]) != re.subCount {
+		return false, nil
+	}
+	if len(data[0][0]) != len(expr) {
+		return false, nil
+	}
+	matched = true
+	//submatch = make(map[string]string)
+	submatch = make([][2]string, 0, re.subNameedCount)
+
+	l := len(data[0])
+	d := data[0]
+	for i := 0; i < l; i++ {
+		if re.subNames[i] != "" {
+			//submatch[re.subNames[i]] = d[i]
+			submatch = append(submatch, [2]string{re.subNames[i], d[i]})
+		}
+	}
+	return
+}
 
 var debug bool = false
 
-func patternError(text string) error {
-	return errors.New(text)
+func patternError(text string, index int) error {
+	return errors.New(text + fmt.Sprintf(" index %d", index))
 }
 
 // Pathex is a parttern to match url path
 type Pathex struct {
 	Pattern  string
 	SubNames []SubName
+	prefix   []byte
+	ps       string
+	p        []byte
+	pi       int
 }
 
 // string
@@ -24,35 +92,35 @@ func (re Pathex) String() string {
 	return re.Pattern
 }
 
-func (re *Pathex) execute(chars string) (matched bool, data [][2]string) {
-	if chars == "" {
+func (re *Pathex) Match(chars string) (matched bool, data [][2]string) {
+	//chars := []byte(expr)
+
+	charLen, patternLen := len(chars), len(re.Pattern)
+	if charLen < re.pi {
 		return false, nil
 	}
 
-	charLen, patternLen := len(chars), len(re.Pattern)
-	var values [][2]string = make([][2]string, 0, len(re.SubNames))
-
-	if charLen < 1 {
+	if !(charLen >= re.pi && chars[0:re.pi] == re.ps) {
 		return false, nil
 	}
 
 	var charIndex, patternIndex, nameIndex int
+	var c, p byte
+	matched = false
+	data = make([][2]string, 0, len(re.SubNames))
 
-	// if debug {
-	// 	fmt.Println("execute:", chars, charLen, patternLen)
-	// }
+	charIndex = re.pi
+	patternIndex = re.pi
 
 	for {
-		p := re.Pattern[patternIndex]
-		var c byte
+		if patternIndex >= patternLen {
+			break
+		}
 
+		p = re.p[patternIndex]
 		if p == '{' {
 			value := make([]byte, 0, 32)
 			subName := re.SubNames[nameIndex]
-
-			// if debug {
-			// 	fmt.Println("subName", subName.Name, subName.end)
-			// }
 
 			for {
 				if charIndex >= charLen {
@@ -60,45 +128,44 @@ func (re *Pathex) execute(chars string) (matched bool, data [][2]string) {
 				}
 
 				c = chars[charIndex]
-
-				// if debug {
-				// 	fmt.Printf("c: %d %d %c \n", charIndex, c, c)
-				// }
-
 				if c == '/' || c == '.' || c == '?' || (subName.end != byte(0) && c == subName.end) {
-					// if debug {
-					// 	fmt.Printf("sub name end: %d %c \n", charIndex, c)
-					// }
 					break
 				} else {
 					value = append(value, c)
 				}
-
 				charIndex++
 			}
 
 			if len(value) != 0 {
-				values = append(values, [2]string{subName.Name, string(value)})
+				data = append(data, [2]string{subName.Name, string(value)})
 			}
 			patternIndex = patternIndex + subName.length + 2
 			nameIndex++
 		} else if p == '?' {
-			// if debug {
-			// 	fmt.Println("?:", charIndex, charLen)
-			// }
 			if charIndex < charLen {
 				return false, nil
 			}
-			return true, values
+			return true, data
+		} else if p == '#' {
+			matched = true
+			patternIndex++
+			//charIndex++
 		} else {
 			if charIndex >= charLen {
-				return false, nil
+				if !matched {
+					return false, nil
+				} else {
+					break
+				}
 			}
 
 			c = chars[charIndex]
-
 			if p != c {
-				return false, nil
+				if !matched {
+					return false, nil
+				} else {
+					break
+				}
 			}
 			patternIndex++
 			charIndex++
@@ -110,39 +177,35 @@ func (re *Pathex) execute(chars string) (matched bool, data [][2]string) {
 				}
 			}
 		}
-
-		if patternIndex >= patternLen {
-			break
-		}
-
 	}
 
-	return true, values
+	return true, data
 }
 
-// MatchString returns whether the Pathex matches the string s
-func (re *Pathex) MatchString(s string) bool {
-	matched, _ := re.execute(s)
+// MatchString returns whether the Pathex matches the string expr
+func (re *Pathex) MatchString(expr string) bool {
+	matched, _ := re.Match(expr)
 	return matched
 }
 
-// FindAllStringSubmatch returns a slice of all successive matches of the expression, nil indicates no match.
-func (re *Pathex) FindAllStringSubmatch(s string) [][2]string {
+// func (re *Pathex) Match(expr string) (matched bool, submatch map[string]string) {
+// 	return re.execute(expr)
+// }
 
-	matched, data := re.execute(s)
-	if !matched {
-		return nil
-	}
-	return data
-}
+// // FindAllStringSubmatch returns a slice of all successive matches of the expression, nil indicates no match.
+// func (re *Pathex) FindAllStringSubmatch(s string) [][2]string {
+// 	matched, data := re.execute(s)
+// 	if !matched {
+// 		return nil
+// 	}
+// 	return data
+// }
 
 // subName
 type SubName struct {
-	pathIndex int
-	Name      string
-	end       byte
-	length    int
-	// pattern string not implemented
+	Name   string
+	end    byte
+	length int
 }
 
 // string
@@ -150,16 +213,16 @@ func (self SubName) String() string {
 	return self.Name
 }
 
-// Compile parses a expression and returns
+// Compile parses a expression 
 func Compile(s string) (exp *Pathex, err error) {
-
+	s = strings.TrimSpace(s)
 	if s == "" {
-		err = patternError("pattern can not be empty")
+		err = patternError("pattern can not be empty", 0)
 		return
 	}
 
 	if s[0] != '/' {
-		err = patternError("pattern need start with /")
+		err = patternError("pattern need start with /", 0)
 		return
 	}
 
@@ -168,27 +231,30 @@ func Compile(s string) (exp *Pathex, err error) {
 
 	var name []byte
 	nameIndex := -1
-	pathIndex := 0
 	dotIndex := -1
+	numberIndex := -1
+	pi := 0
 
 	for i, c := range text {
-		if (nameIndex > -1) && (c == '{' || c == '/' || c == '.') {
-			if nameIndex > -1 {
-				err = patternError("brackets match fail ")
-				return
-			}
+		if (nameIndex > -1) && (c == '{' || c == '/' || c == '.' || c == '#' || c == '?') {
+			err = patternError("brackets fail", i)
+			return
 		}
 		if (dotIndex > -1) && (c == '{' || c == '/' || c == '.' || c == '}') {
-			if nameIndex > -1 {
-				err = patternError("pattern '.' match fail ")
-				return
+			err = patternError("pattern '.' match fail", i)
+			return
+		}
+
+		if c == '{' || c == '?' || c == '#' {
+			if pi == 0 {
+				pi = i
 			}
 		}
 
 		switch c {
 		case '{':
 			if text[i-1] == '}' {
-				err = patternError("need chars split betwwen bracket ")
+				err = patternError("need delimiter between bracket", i)
 				return
 			}
 
@@ -196,11 +262,11 @@ func Compile(s string) (exp *Pathex, err error) {
 			name = make([]byte, 0)
 		case '}':
 			if nameIndex < 0 {
-				err = patternError("can not find a match for { ")
+				err = patternError("can not find a match for {", i)
 				return
 			}
 			if len(name) == 0 {
-				err = patternError("subName can not be empty ")
+				err = patternError("subName can not be empty", i)
 				return
 			}
 			nameIndex = -1
@@ -209,30 +275,35 @@ func Compile(s string) (exp *Pathex, err error) {
 				end = text[i+1]
 			}
 			subNames = append(subNames, SubName{
-				pathIndex: pathIndex,
-				Name:      string(name),
-				length:    len(name),
-				end:       end})
+				Name:   string(name),
+				length: len(name),
+				end:    end})
 		case '/':
-			pathIndex++
+			//pathIndex++
 		case '?':
-			if i != len(text)-1 {
-				err = patternError("? should at end of pattern? ")
+			if i != len(text)-1 || numberIndex > 0 {
+				err = patternError("? is invalid", i)
 				return
 			}
 		case '.':
-			if i < 1 {
-				err = patternError("'.' is invalid ")
+			if i < 1 || dotIndex > 0 {
+				err = patternError("'.' is invalid", i)
 				return
 			}
 			dotIndex = i
+		case '#':
+			if i < 1 || numberIndex > 0 {
+				err = patternError("'#' is invalid", i)
+				return
+			}
+			numberIndex = i
 		default:
 			if nameIndex > -1 {
 				if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '_') {
 					name = append(name, c)
 					nameIndex++
 				} else {
-					err = patternError("subName should be a-z, A-Z, 0-9 and _  ")
+					err = patternError("subName should be a-z, A-Z, 0-9 or _ ", i)
 					return
 				}
 			}
@@ -241,11 +312,22 @@ func Compile(s string) (exp *Pathex, err error) {
 	}
 
 	if nameIndex > -1 {
-		err = patternError("brackets match fail ")
+		err = patternError("brackets match fail", len(text))
 		return
 	}
 
-	return &Pathex{s, subNames}, nil
+	if pi == 0 {
+		pi = len(text)
+	}
+
+	return &Pathex{
+		Pattern:  s,
+		SubNames: subNames,
+		p:        text,
+		prefix:   text[:pi],
+		ps:       string(text[:pi]),
+		pi:       pi,
+	}, nil
 }
 
 // MatchString returns whether the pattern matches the string s

@@ -120,7 +120,7 @@ func BenchmarkDataByIntJson(b *testing.B) {
 }
 
 func BenchmarkControllerRangeCount(b *testing.B) {
-	url := "/demo/rangecount/?start=1&end=99"
+	url := "/basic/rangecount/?start=1&end=99"
 	btestGet(b, url)
 }
 
@@ -178,29 +178,29 @@ func TestController(t *testing.T) {
 
 	data := make([]*model.Data, 0)
 
-	dotest(t, "GET", "/demo/clear/", nil, "0")
+	dotest(t, "GET", "/basic/clear/", nil, "0")
 
-	dotest(t, "GET", "/demo/all/", nil, Json(data))
+	dotest(t, "GET", "/basic/all/", nil, Json(data))
 
-	dotest(t, "GET", "/demo/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
+	dotest(t, "GET", "/basic/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
 	data = append(data, demoData())
-	dotest(t, "GET", "/demo/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
+	dotest(t, "GET", "/basic/add/?int=32&str=string&uint=1024&float=1.1&byte=64", nil, demoData().String())
 	data = append(data, demoData())
 
-	dotest(t, "GET", "/demo/all/", nil, Json(data))
+	dotest(t, "GET", "/basic/all/", nil, Json(data))
 
-	dotest(t, "GET", "/demo/int/32", nil, Json(data))
+	dotest(t, "GET", "/basic/int/32", nil, Json(data))
 
-	dotest(t, "GET", "/demo/rangecount/?start=1&end=99", nil, strconv.Itoa(len(data)))
+	dotest(t, "GET", "/basic/rangecount/?start=1&end=99", nil, strconv.Itoa(len(data)))
 
-	dotest(t, "GET", "/demo/put/32?str=s&uint=64&float=3.14&byte=8", nil, strconv.Itoa(len(data)))
+	dotest(t, "GET", "/basic/set/32?str=s&uint=64&float=3.14&byte=8", nil, strconv.Itoa(len(data)))
 
-	dotest(t, "GET", "/demo/delete/32", nil, strconv.Itoa(len(data)))
+	dotest(t, "GET", "/basic/delete/32", nil, strconv.Itoa(len(data)))
 
-	dotest(t, "POST", "/demo/post/", []byte(Json(demoData())), "true")
-	dotest(t, "POST", "/demo/post/", []byte(Json(demoData())), "true")
+	dotest(t, "POST", "/basic/post/", []byte(Json(demoData())), "true")
+	dotest(t, "POST", "/basic/post/", []byte(Json(demoData())), "true")
 
-	dotest(t, "GET", "/demo/all/", nil, Json(data))
+	dotest(t, "GET", "/basic/all/", nil, Json(data))
 }
 
 // get with cookie

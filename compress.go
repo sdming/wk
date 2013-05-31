@@ -44,7 +44,6 @@ func (cp *CompressProcessor) Register(server *HttpServer) {
 
 // Execute convert result to  CompressResult
 func (cp *CompressProcessor) Execute(ctx *HttpContext) {
-
 	if ctx.Result == nil || ctx.Error != nil {
 		return
 	}
@@ -59,7 +58,6 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 	}
 
 	var contenType string
-
 	if ctx.ResHeader("Content-Type") == "" {
 		if typ, ok := ctx.Result.(ContentTyper); ok {
 			contenType = typ.Type()
@@ -77,26 +75,21 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 	var err error
 	var format string
 
-	encodings := strings.Split(accept, ",")
-	for _, encoder := range encodings {
-		if encoder == "deflate" {
-			format = encoder
-			writer, err = zlib.NewWriterLevel(ctx.Resonse, cp.Level)
-		} else if encoder == "gzip" {
-			writer, err = gzip.NewWriterLevel(ctx.Resonse, cp.Level)
-		}
-
-		if format != "" {
-			break
-		}
+	if strings.Contains(accept, "deflate") {
+		format = "deflate"
+		writer, err = zlib.NewWriterLevel(ctx.Resonse, cp.Level)
+	} else if strings.Contains(accept, "gzip") {
+		format = "gzip"
+		writer, err = gzip.NewWriterLevel(ctx.Resonse, cp.Level)
 	}
 
 	if format == "" || err != nil {
 		return
 	}
 
+	ctx.Resonse.Header().Set("Content-Encoding", format)
 	ctx.Resonse = &compressResponseWriter{
-		ctx:         ctx,
+		rw:          ctx.Resonse,
 		writer:      writer,
 		contentType: contenType,
 		format:      format,
@@ -106,7 +99,7 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 
 // compressResponseWriter wrap gzip/deflate and ResponseWriter
 type compressResponseWriter struct {
-	ctx           *HttpContext
+	rw            http.ResponseWriter
 	writer        io.Writer
 	contentType   string
 	format        string
@@ -114,20 +107,22 @@ type compressResponseWriter struct {
 }
 
 func (crw *compressResponseWriter) Header() http.Header {
-	return crw.ctx.Resonse.Header()
+	return crw.rw.Header()
 }
 
 func (crw *compressResponseWriter) WriteHeader(status int) {
-	crw.ctx.Resonse.WriteHeader(status)
+	crw.rw.WriteHeader(status)
 }
 
 func (crw *compressResponseWriter) Write(p []byte) (int, error) {
 	if !crw.headerWritten {
-		crw.ctx.SetHeader("Content-Encoding", crw.format)
-		if crw.ctx.ResHeader("Content-Type") == "" && crw.contentType != "" {
-			crw.ctx.ContentType(crw.contentType)
+		if crw.rw.Header().Get("Content-Type") == "" && crw.contentType != "" {
+			crw.rw.Header().Set(HeaderContentType, crw.contentType)
 		}
 		crw.headerWritten = true
 	}
-	return crw.writer.Write(p)
+	n, err := crw.writer.Write(p)
+	Logger.Println("compressResponseWriter.Write", n, err)
+
+	return n, err
 }

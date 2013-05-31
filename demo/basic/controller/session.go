@@ -33,7 +33,7 @@ func RegisterSessionRoute(server *wk.HttpServer) {
 	server.RouteTable.Path("/session/{action}").ToController(sessionDemo)
 }
 
-// url: /session/id/
+// url: /session/id
 func (c *Session) Id(ctx *wk.HttpContext) (wk.HttpResult, error) {
 	id := ctx.SessionId()
 	return wk.Data(id), nil
@@ -63,13 +63,13 @@ func (c *Session) Remove(ctx *wk.HttpContext) (wk.HttpResult, error) {
 	return wk.Data(err == nil), err
 }
 
-// url: /session/abandon/
+// url: /session/abandon
 func (c *Session) Abandon(ctx *wk.HttpContext) (wk.HttpResult, error) {
 	err := ctx.Session.Abandon()
 	return wk.Data(true), err
 }
 
-// url: /session/keys/
+// url: /session/keys
 func (c *Session) Keys(ctx *wk.HttpContext) (wk.HttpResult, error) {
 	keys, err := ctx.Session.Keys()
 	return wk.Data(fmt.Sprintln(keys)), err
@@ -155,6 +155,5 @@ func (d *DebugDriver) Init(options string) error {
 }
 
 func init() {
-	log.Println("Init, Register session_debug")
 	session.Register("session_debug", newDebugDriver())
 }

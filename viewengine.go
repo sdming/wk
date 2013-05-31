@@ -64,37 +64,37 @@ type GoHtml struct {
 	Funcs          template.FuncMap
 }
 
-// // NewGoHtml return a *GoHtml, it retur error if basePath doesn't exists
-// func NewGoHtml(basePath string) *GoHtml {
-// 	// if basePath == "" {
-// 	// 	return nil, errors.New("bash path cann't be empty")
-// 	// }
+// NewGoHtml return a *GoHtml, it retur error if basePath doesn't exists
+func NewGoHtml(basePath string) (*GoHtml, error) {
+	if basePath == "" {
+		return nil, errors.New("bash path cann't be empty")
+	}
 
-// 	// if basePath != "" {
-// 	// 	basePath = cleanFilePath(basePath)
-// 	// 	if !strings.HasSuffix(basePath, "/") {
-// 	// 		basePath = basePath + "/"
-// 	// 	}
-// 	// }
+	if basePath != "" {
+		basePath = cleanFilePath(basePath)
+		if !strings.HasSuffix(basePath, "/") {
+			basePath = basePath + "/"
+		}
+	}
 
-// 	// if !isDirExists(basePath) {
-// 	// 	return nil, errors.New("path doesn't exists " + basePath)
-// 	// }
+	if !isDirExists(basePath) {
+		return nil, errors.New("path doesn't exists " + basePath)
+	}
 
-// 	// ve := &GoHtml{
-// 	// 	BasePath:       basePath,
-// 	// 	TemplatesCache: make(map[string]*template.Template),
-// 	// 	Funcs:          make(template.FuncMap),
-// 	// }
+	ve := &GoHtml{
+		BasePath:       basePath,
+		TemplatesCache: make(map[string]*template.Template),
+		Funcs:          make(template.FuncMap),
+	}
 
-// 	// for name, fn := range TemplateFuncs {
-// 	// 	ve.Funcs[name] = fn
-// 	// }
-// 	// ve.Funcs["partial"] = ve.renderfile // render a template file
+	for name, fn := range TemplateFuncs {
+		ve.Funcs[name] = fn
+	}
+	ve.Funcs["partial"] = ve.renderfile // render a template file
 
-// 	// return ve, nil
+	return ve, nil
 
-// }
+}
 
 // Register initialize viewengine
 func (ve *GoHtml) Register(server *HttpServer) error {

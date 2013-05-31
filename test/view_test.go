@@ -29,7 +29,10 @@ func defaultRootPath() string {
 
 func defaultViewEngine() wk.ViewEngine {
 	veBase := defaultRootPath() + "views/"
-	ve, _ := wk.NewGoHtml(veBase)
+	ve, err := wk.NewGoHtml(veBase)
+	if err != nil {
+		panic(err)
+	}
 	return ve
 }
 

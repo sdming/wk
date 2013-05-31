@@ -22,7 +22,7 @@ type RouteTable struct {
 
 // addRouteRule
 func (r *RouteTable) addRouteRule(method, path string) *RouteRule {
-	rule, err := NewRouteRule(method, path)
+	rule, err := newRouteRule(method, path)
 	if err != nil {
 		panic(err)
 	}
@@ -55,17 +55,33 @@ func (r *RouteTable) Path(path string) *RouteRule {
 	return r.addRouteRule(_any, path)
 }
 
-// Add apend a *RouteRule to RouteTable
-func (r *RouteTable) Add(rule *RouteRule) error {
-	exp, err := pathexp.Compile(rule.Pattern)
+// Regexp match with regexp
+func (r *RouteTable) Regexp(method, path string) *RouteRule {
+	exp, err := pathexp.RegexpCompile(path)
 	if err != nil {
-		return nil
+		panic(err)
 	}
-	rule.pathex = exp
 
+	rule := &RouteRule{
+		Pattern: path,
+		Method:  method,
+		re:      exp,
+	}
 	r.Routes = append(r.Routes, rule)
-	return nil
+	return rule
 }
+
+// // Add apend a *RouteRule to RouteTable
+// func (r *RouteTable) Add(rule *RouteRule) error {
+// 	exp, err := pathexp.Compile(rule.Pattern)
+// 	if err != nil {
+// 		return nil
+// 	}
+// 	rule.re = exp
+
+// 	r.Routes = append(r.Routes, rule)
+// 	return nil
+// }
 
 // Match return matched *RouteRule and route data
 func (r *RouteTable) Match(ctx *HttpContext) (rule *RouteRule, data map[string]string, ok bool) {
@@ -74,9 +90,7 @@ func (r *RouteTable) Match(ctx *HttpContext) (rule *RouteRule, data map[string]s
 	}
 
 	for _, rule = range r.Routes {
-		//fmt.Println("test route match", rule)
 		if data, ok = rule.Match(ctx); ok {
-			//fmt.Println("test route match success", rule, ok)
 			return
 		}
 	}
@@ -102,7 +116,8 @@ type RouteRule struct {
 	// Handler process request
 	Handler Handler
 
-	pathex *pathexp.Pathex
+	//re pathexp.Matcher
+	re pathexp.Matcher
 }
 
 // String
@@ -111,18 +126,18 @@ func (r *RouteRule) String() string {
 }
 
 // Match return (route data,true) if matched, or (nil, false) if not
-func (r *RouteRule) Match(ctx *HttpContext) (data map[string]string, ok bool) {
+func (r *RouteRule) Match(ctx *HttpContext) (data RouteData, ok bool) {
 	if ctx.Method != r.Method && r.Method != _any && r.Method != "" && !(ctx.Method == HttpVerbsHead && r.Method == HttpVerbsGet) {
 		return
 	}
 
-	routeData := r.pathex.FindAllStringSubmatch(ctx.RequestPath)
-	if routeData == nil {
+	matched, submatch := r.re.Match(ctx.RequestPath)
+	if !matched {
 		return
 	}
 
 	data = make(map[string]string)
-	for _, x := range routeData {
+	for _, x := range submatch {
 		data[x[0]] = x[1]
 	}
 
@@ -130,8 +145,8 @@ func (r *RouteRule) Match(ctx *HttpContext) (data map[string]string, ok bool) {
 	return
 }
 
-// NewRouteRule return *RouteRule
-func NewRouteRule(method, path string) (rule *RouteRule, err error) {
+// newRouteRule return *RouteRule
+func newRouteRule(method, path string) (rule *RouteRule, err error) {
 	var exp *pathexp.Pathex
 	exp, err = pathexp.Compile(path)
 	if err != nil {
@@ -141,7 +156,7 @@ func NewRouteRule(method, path string) (rule *RouteRule, err error) {
 	rule = &RouteRule{
 		Pattern: path,
 		Method:  method,
-		pathex:  exp,
+		re:      exp,
 	}
 	return
 }
