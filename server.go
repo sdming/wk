@@ -180,8 +180,11 @@ func (srv *HttpServer) Start() (err error) {
 	if err = srv.configSession(); err != nil {
 		return
 	}
-	if err = srv.configViewEngine(); err != nil {
-		return
+
+	if srv.Config.ViewEnable {
+		if err = srv.configViewEngine(); err != nil {
+			return
+		}
 	}
 
 	if len(srv.Processes) == 0 {
@@ -249,7 +252,6 @@ func (srv *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // doServer
 func (srv *HttpServer) doServer(ctx *HttpContext) {
-
 	ctx.SetHeader(HeaderServer, _serverName)
 	srv.exeSession(ctx)
 
@@ -263,13 +265,18 @@ func (srv *HttpServer) doServer(ctx *HttpContext) {
 // buildContext
 func (s *HttpServer) buildContext(w http.ResponseWriter, r *http.Request) *HttpContext {
 	_ = r.ParseForm()
-	return &HttpContext{
+	ctx := &HttpContext{
 		Resonse:     w,
 		Request:     r,
 		Method:      r.Method,
 		RequestPath: cleanPath(strings.TrimSpace(r.URL.Path)),
-		ViewData:    make(map[string]interface{}),
 	}
+
+	if s.Config.ViewEnable {
+		ctx.ViewData = make(map[string]interface{})
+	}
+
+	return ctx
 }
 
 // exeProcess execute all HttpProcessor

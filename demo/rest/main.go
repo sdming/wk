@@ -10,7 +10,7 @@ package main
 import (
 	"fmt"
 	"github.com/sdming/wk"
-	"github.com/sdming/wk/demo/basic/controller"
+	"github.com/sdming/wk/demo/rest/controller"
 )
 
 func main() {
@@ -22,12 +22,14 @@ func main() {
 	}
 
 	server.Processes.Remove("_static")
+	server.Config.ViewEnable = false
+	server.Config.SessionEnable = false
 
-	controller := controller.NewDemoController()
+	controller := controller.NewBasicController()
 
 	// url: /demo/xxx/xxx
 	// route to controller
-	server.RouteTable.Path("/demo/{action}/{id}").ToController(controller)
+	server.RouteTable.Path("/basic/{action}/{id}").ToController(controller)
 
 	server.Start()
 

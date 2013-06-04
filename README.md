@@ -3,9 +3,8 @@ gwk
 
 Web, Let's GO!
 
-gwk is a smart &amp; lightweight web server engine in Go   
+gwk is a smart &amp; lightweight web server engine 
 gwk is webkit for web server  
-gwk is Wukong, a famouse cartoon character in Chinese epic. [wukong](http://en.wikipedia.org/wiki/Sun_Wukong)   
 
 
 Roadmap
@@ -16,11 +15,11 @@ Roadmap
 * 0.3 web api server. april 2013  
 * 0.4 test on go 1.1. may 2013  
 * 0.5 cookie, session. may 2013 
-* 0.6 view engine. may 2013  (we are here)  
-* 0.7 watch & load config      
-* 0.8 custome error & 404 page 
-* 0.9 file upload    
-* 1.0 go  
+* 0.6 view engine. may 2013  
+* 0.7 watch & load config. june 2013      
+* 0.8 custome error & 404 page. june 2013    
+* 0.9 file upload. june 2013       
+* 1.0 go. july 2013   
 * 1.x    
 
 Requirements
@@ -54,6 +53,12 @@ Getting Started
 	server.RouteTable.Get("/data/top/{count}").To(...)
 
 	server.Start()
+
+
+How to run demo  
+---
+	cd ./demo/basic  
+	go run main.go  
 
 
 Route
@@ -306,7 +311,7 @@ http result
 * RedirectResult 	redirect
 * NotFoundResult  	404
 * ErrorResult 		error
-* BundleResult		bundle of files (will move from demo(FileJsBundling) to master )
+* BundleResult		bundle of files  
 
 Event
 ---
@@ -346,11 +351,11 @@ Example
 TODO:  
 * 	basic example  
 	run default http server   
-	file: ./demo/basic/basic.go  
+	file: ./demo/basic/main.go  
 
 * 	rest api example  
 	run rest http api server  
-	file: ./demo/api/rest.go  
+	file: ./demo/rest/main.go  
 
 * 	httpresult example  
 	how to write a http result to return qrcode image   
@@ -362,9 +367,9 @@ TODO:
 
 * 	custom processor  
 	how to register a Processor to compress http response  
-	file: ./compress.go (some bugs)  
+	file: ./compress.go   
 
-* 	file stream  example  
+* 	file stream example  
 	how to return a file stream    
 	file: ./demo/basic/model/file.go  
 
@@ -394,21 +399,12 @@ No
 
 Css & js bundling
 ---
-Maybe, maybe not. Do we really need it ? 
+Do we really need it ? 
 ./demo/basic/model/file.go is a very sample of how to bundle files.   
 
 Cache, gzip
 ---
 nginx, haproxy, Varnish can provide awesome service
-
-
-change log
----
-* kick off
-* fork gomvc, refactoring
-* configration framework
-* rest server   
-* session   
 
 Contributing
 ---

@@ -4,6 +4,7 @@
 package wk
 
 import (
+	"os"
 	"path"
 )
 
@@ -29,10 +30,14 @@ func (p *StaticProcessor) Execute(ctx *HttpContext) {
 	}
 
 	physicalPath := path.Join(p.server.Config.PublicDir, ctx.RequestPath)
-	if !isFileExists(physicalPath) {
+	info, err := os.Stat(physicalPath)
+	if err != nil {
+		return
+	}
+	if (info.IsDir() && p.server.Config.IndexesEnable && ctx.RequestPath != "/") || !info.IsDir() {
+		ctx.PhysicalPath = physicalPath
+		ctx.Result = File(physicalPath)
 		return
 	}
 
-	ctx.PhysicalPath = physicalPath
-	ctx.Result = File(physicalPath)
 }

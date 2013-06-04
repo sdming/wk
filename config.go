@@ -90,6 +90,12 @@ type WebConfig struct {
 	// SessionDriver is the name of driver
 	SessionDriver string
 
+	// ViewEnable, enable view engine or not
+	ViewEnable bool
+
+	// IndexesEnable like Indexes of apache 
+	IndexesEnable bool
+
 	// Debug is true if run in debug model
 	Debug bool
 }
@@ -137,9 +143,11 @@ func defaultConfig() *WebConfig {
 		ConfigDir:      confdir,
 		ViewDir:        viewdir,
 		ReadTimeout:    defaultReadTimeout,
-		SessionEnable:  false,
+		SessionEnable:  true,
 		SessionTimeout: defaultSessionTimeout,
 		SessionDriver:  defaultSessionDriver,
+		ViewEnable:     true,
+		IndexesEnable:  true,
 	}
 
 	return conf

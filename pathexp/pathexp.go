@@ -142,9 +142,12 @@ func (re *Pathex) Match(chars string) (matched bool, data [][2]string) {
 			patternIndex = patternIndex + subName.length + 2
 			nameIndex++
 		} else if p == '?' {
-			if charIndex < charLen {
+			if charIndex < charLen && (!(charIndex == charLen-1 && chars[charIndex] == '/')) {
 				return false, nil
 			}
+			// if charIndex < charLen {
+			// 	return false, nil
+			// }
 			return true, data
 		} else if p == '#' {
 			matched = true

@@ -9,17 +9,33 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/sdming/wk"
-	"github.com/sdming/wk/demo/basic/model"
 )
 
+type Data struct {
+	Str   string
+	Uint  uint64
+	Int   int
+	Float float32
+	Byte  byte
+}
+
+func (d *Data) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("string:%s;uint:%d;int:%d;float:%f;byte:%c",
+		d.Str, d.Uint, d.Int, d.Float, d.Byte)
+}
+
 type BasicController struct {
-	data []*model.Data
+	data []Data
 }
 
 func NewBasicController() *BasicController {
 	return &BasicController{
-		data: make([]*model.Data, 0),
+		data: make([]Data, 0),
 	}
 }
 
@@ -43,8 +59,8 @@ func (c *BasicController) deleteByInt(v int) {
 	}
 }
 
-func (c *BasicController) getByInt(v int) []*model.Data {
-	data := make([]*model.Data, 0)
+func (c *BasicController) getByInt(v int) []Data {
+	data := make([]Data, 0)
 	for i := 0; i < len(c.data); i++ {
 		if c.data[i].Int == v {
 			data = append(data, c.data[i])
@@ -60,7 +76,7 @@ func (c *BasicController) All(ctx *wk.HttpContext) (result wk.HttpResult, err er
 
 // url: /basic/add/?int=32&str=string&uint=1024&float=1.1&byte=64
 func (c *BasicController) Add(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
-	data := &model.Data{
+	data := Data{
 		Int:   ctx.FormIntOr("int", 0),
 		Uint:  uint64(ctx.FormIntOr("uint", 0)),
 		Str:   ctx.FormValue("str"),
@@ -144,17 +160,17 @@ func (c *BasicController) Post(ctx *wk.HttpContext) (result wk.HttpResult, err e
 		return nil, err
 	}
 
-	data := &model.Data{}
+	data := &Data{}
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		return nil, err
 	}
-	c.data = append(c.data, data)
+	c.data = append(c.data, *data)
 	return wk.Data(true), nil
 }
 
 // url: /basic/clear/
 func (c *BasicController) Clear(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
-	c.data = make([]*model.Data, 0)
+	c.data = make([]Data, 0)
 	return wk.Data(len(c.data)), nil
 }

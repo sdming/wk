@@ -219,7 +219,7 @@ func DataPost(data Data) string {
 server.RouteTable.Post("/data/post?").ToFunc(DataPost).BindToStruct()
         </pre>
         <p>
-            click: <a class="api-link" data-method="POST"  data-data='"Str":"string:1","Uint":100,"Int":10,"Float":1.1,"Byte":1}' href="/data/post">POST /data/post</a>
+            click: <a class="api-link" data-method="POST" data-content="application/x-www-form-urlencoded"  data-data="str=string&uint=1024&int=32&float=3.14&byte=64" href="/data/post">POST /data/post</a>
         </p>
     </section>
     <hr>
@@ -236,7 +236,7 @@ func DataPostPtr(data *Data) string {
 server.RouteTable.Post("/data/postptr?").ToFunc(DataPostPtr).BindToStruct()
         </pre>
         <p>
-            click: <a class="api-link" data-method="POST"  data-data='"Str":"string:1","Uint":100,"Int":10,"Float":1.1,"Byte":1}' href="/data/postptr">POST /data/postptr</a>
+            click: <a class="api-link" data-method="POST" data-content="application/x-www-form-urlencoded"  data-data="str=string&uint=1024&int=32&float=3.14&byte=64"  href="/data/postptr">POST /data/postptr</a>
         </p>
     </section>
 
@@ -262,7 +262,7 @@ server.RouteTable.Delete("/data/delete/{p0}").ToFunc(DataDelete)
 
     <section >
         <p>
-            test diffrent parameter type
+            Test diffrent parameter type
         </p>
         <pre class="prettyprint linenums lang-go">
 func DataSet(s string, u uint64, i int, f float32, b byte) *Data {
@@ -284,6 +284,32 @@ server.RouteTable.Get("/data/set?").ToFunc(DataSet).
     </section> 
 
     <hr>
+
+    <section >
+        <p>
+            Test anonymous struct as parameter
+        </p>
+        <pre class="prettyprint linenums lang-go">
+func DataAnonymous(data struct {
+    Str   string
+    Uint  uint64
+    Int   int
+    Float float32
+    Byte  byte
+},) string {
+
+    return fmt.Sprintln(data)
+}
+
+server.RouteTable.Get("/data/anonymous?").ToFunc(DataAnonymous).BindToStruct()
+        </pre>
+        <p>
+            click: <a class="api-link" href="/data/anonymous?str=string&uint=1024&int=32&float=3.14&byte=64">/data/anonymous?str=string&uint=1024&int=32&float=3.14&byte=64</a>
+        </p>
+    </section> 
+
+    <hr>
+
 
 </div>
 

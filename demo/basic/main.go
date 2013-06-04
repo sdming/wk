@@ -54,6 +54,8 @@ func main() {
 		controller.RegisterSessionRoute(server)
 	}
 
+	controller.RegisterHomeRoute(server)
+
 	server.Start()
 
 }

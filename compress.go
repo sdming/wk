@@ -7,10 +7,15 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"compress/zlib"
-	"io"
 	"net/http"
 	"strings"
 )
+
+type compresser interface {
+	Flush() error
+	Close() error
+	Write(p []byte) (int, error)
+}
 
 // CompressProcessor compress http response with gzip or deflate
 // TODO: copy header from original result
@@ -71,7 +76,7 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 		return
 	}
 
-	var writer io.Writer
+	var writer compresser
 	var err error
 	var format string
 
@@ -100,7 +105,7 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 // compressResponseWriter wrap gzip/deflate and ResponseWriter
 type compressResponseWriter struct {
 	rw            http.ResponseWriter
-	writer        io.Writer
+	writer        compresser
 	contentType   string
 	format        string
 	headerWritten bool
@@ -116,13 +121,12 @@ func (crw *compressResponseWriter) WriteHeader(status int) {
 
 func (crw *compressResponseWriter) Write(p []byte) (int, error) {
 	if !crw.headerWritten {
-		if crw.rw.Header().Get("Content-Type") == "" && crw.contentType != "" {
+		if crw.rw.Header().Get(HeaderContentType) == "" && crw.contentType != "" {
 			crw.rw.Header().Set(HeaderContentType, crw.contentType)
 		}
 		crw.headerWritten = true
 	}
 	n, err := crw.writer.Write(p)
-	Logger.Println("compressResponseWriter.Write", n, err)
-
+	err = crw.writer.Flush()
 	return n, err
 }

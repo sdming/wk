@@ -70,6 +70,17 @@ func DataSet(s string, u uint64, i int, f float32, b byte) *Data {
 	}
 }
 
+func DataAnonymous(data struct {
+	Str   string
+	Uint  uint64
+	Int   int
+	Float float32
+	Byte  byte
+},) string {
+
+	return fmt.Sprintln(data)
+}
+
 func DataDelete(i int) string {
 	return fmt.Sprintf("delete %d", i)
 }
@@ -186,6 +197,11 @@ func RegisterDataRoute(server *wk.HttpServer) {
 	// test diffrent parameter type
 	server.RouteTable.Get("/data/set?").ToFunc(DataSet).
 		BindByNames("str", "uint", "int", "float", "byte")
+
+	// url: get /data/anonymous?str=string&uint=1024&int=32&float=3.14&byte=64
+	// func: DataAnonymous(...) string
+	// test anonymous struct
+	server.RouteTable.Get("/data/anonymous?").ToFunc(DataAnonymous).BindToStruct()
 
 }
 
