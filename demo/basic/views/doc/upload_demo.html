@@ -1,0 +1,163 @@
+{{set . "title" "Upload Demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<link rel="stylesheet" href="/css/jquery.fileupload-ui.css">
+<style>
+
+</style>
+
+{{end}}
+
+{{define "body" }}
+
+<div class="container">
+
+
+    <section id="demo-upload">
+        <div class="page-header">
+            <h3>File Upload</h3>
+        </div>
+        <p>
+            File upload.
+        </p>
+         <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>
+      
+        </p>
+        <pre class="prettyprint lang-go">
+func FileAjax(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	ctx.Request.ParseMultipartForm(32 << 20) // 32 MB
+	status := UploadStatus{make([]FileInfo, 0)}
+	for _, headers := range ctx.Request.MultipartForm.File {
+		for _, header := range headers {
+			info := fileInfo(header)
+			status.Files = append(status.Files, info)
+		}
+	}
+	log.Println(status)
+	return wk.Json(status), nil
+}
+
+        </pre>
+        <div>
+            <form method="post" enctype="multipart/form-data" class="form-horizontal">           
+            <fieldset>
+                <legend>Demo: File Upload Form</legend>
+
+                <div class="control-group">
+                    <label class="control-label">
+                        File 1</label>
+                    <div class="controls">
+                        <input type="file" name="file">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">
+                        File 2</label>
+                    <div class="controls">
+                        <input type="file" name="file">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">
+                        File 3</label>
+                    <div class="controls">
+                        <input type="file" name="file">
+                    </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </fieldset>
+            </form>
+        </div>
+        
+            
+        
+    </section>
+
+
+    <section id="demo-ajax">
+        <div class="page-header">
+            <h3>Ajax Upload</h3>
+        </div>
+        <p>
+            Ajax upload.
+        </p>
+         <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>      
+        </p>
+        <pre class="prettyprint lang-go">
+func FileUpload(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	ctx.Request.ParseMultipartForm(32 << 20) // 32 MB
+	b := &bytes.Buffer{}
+	b.WriteString("files uploaded:\n")
+	for _, headers := range ctx.Request.MultipartForm.File {
+		for _, header := range headers {
+			info := fileInfo(header)
+			b.WriteString(fmt.Sprintf("Name: %s; Content-Type: %s; Size: %d \n", info.Name, info.Type, info.Size))
+		}
+	}
+	ctx.ViewData["msg"] = b.String()
+	return wk.View("share/message.html"), nil
+}
+        </pre>
+        <div>
+            <span class="btn btn-success fileinput-button">
+                <i class="icon-plus icon-white"></i>
+                <span>Select files...</span>
+                <input id="fileupload" type="file" name="files[]" multiple>
+            </span>
+            <br>
+            <br>
+
+            <div id="progress" class="progress progress-success progress-striped">
+                <div class="bar"></div>
+            </div>
+
+            <div id="files"></div>
+            <br>
+        </div>
+        
+    </section>
+
+</div>
+
+
+{{end}}
+
+{{define "script" }}
+<script src="/js/jquery.ui.widget.js"></script>
+<script src="/js/jquery.iframe-transport.js"></script>
+<script src="/js/jquery.fileupload.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        prettyPrint();
+        setupFileUpload();
+    });
+
+    function setupFileUpload(){
+        $('#fileupload').fileupload({
+            url: "/file/fileajax",
+            dataType: 'json',
+            done: function (e, data) {
+                $.each(data.result.files, function (index, file) {
+                    $('<p/>').text(file.name + " type: " + file.type + " ;size: " +  file.size).appendTo('#files');
+                });
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        });
+    }
+
+</script>
+
+ {{end}}

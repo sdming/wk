@@ -215,11 +215,6 @@ func (ctx *HttpContext) FormFloatOr(name string, v float64) float64 {
 // 	return ctx.Request.URL.Query()[name]
 // }
 
-// UserAgent return request header User-Agent
-func (ctx *HttpContext) UserAgent() string {
-	return ctx.Request.Header.Get(HeaderUserAgent)
-}
-
 // ReqHeader return request header by name
 func (ctx *HttpContext) ReqHeader(name string) string {
 	return ctx.Request.Header.Get(name)

@@ -153,22 +153,10 @@ func locationText(v string) string {
 }
 
 func getLocations() []wk.HtmlOption {
-	// options := []wk.HtmlOption{}
-	// server.Config.AppConfig.MustChild("locations").Value(&options)
-	// return options
-
 	return locations
 }
 
 func getSkills() []wk.HtmlOption {
-	// options := make([]wk.HtmlOption, 0)
-	// skills, _ := server.Config.AppConfig.MustChild("skills").Slice()
-	// for _, skill := range skills {
-	// 	options = append(options, wk.HtmlOption{skill, skill})
-	// }
-	// return options
-
-	// cache it
 	return skills
 }
 
