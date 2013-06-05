@@ -17,8 +17,7 @@ Roadmap
 * 0.5 cookie, session. may 2013 
 * 0.6 view engine. may 2013  
 * 0.7 watch & load config. june 2013      
-* 0.8 custome error & 404 page. june 2013    
-     
+* 0.8 custome error & 404 page. june 2013         
 * 1.0 go. july 2013   
 * 1.x    
 
@@ -31,7 +30,7 @@ Usage
 ---
 
 go get github.com/sdming/kiss  
-go get github.com/sdming/mcache
+go get github.com/sdming/mcache  
 go get github.com/sdming/wk  
 
 Document
