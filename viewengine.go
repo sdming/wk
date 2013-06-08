@@ -20,15 +20,11 @@ import (
 
 // DefaultViewEngine
 // TODO: global? move to httpserver?
-var DefaultViewEngine ViewEngine
+//var DefaultViewEngine ViewEngine
 
 // configViewEngine
 // TODO: remove DefaultViewEngine?
 func (srv *HttpServer) configViewEngine() error {
-	// ve, err := NewGoHtml(srv.Config.ViewDir)
-	// if err != nil {
-	// 	return err
-	// }
 	//TODO:move to config file
 	ve := &GoHtml{}
 	err := ve.Register(srv)
@@ -36,7 +32,7 @@ func (srv *HttpServer) configViewEngine() error {
 		return err
 	}
 
-	DefaultViewEngine = ve
+	//DefaultViewEngine = ve
 	srv.ViewEngine = ve
 	Logger.Printf("ViewEngine: %v; \n", ve)
 	return nil

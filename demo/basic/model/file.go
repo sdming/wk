@@ -13,6 +13,7 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -37,6 +38,20 @@ func RegisterFileRoute(server *wk.HttpServer) {
 
 	// url: get /file/upload
 	server.RouteTable.Get("/file/upload").To(FileUploadView)
+
+	// url: get /file/absolute
+	server.RouteTable.Get("/file/absolute").To(FileAbsolute)
+
+	// url: get /file/relative
+	server.RouteTable.Get("/file/relative").To(FileRelative)
+}
+
+func FileAbsolute(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.File(path.Join(ctx.Server.Config.RootDir, "public/humans.txt")), nil
+}
+
+func FileRelative(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.File("~/public/humans.txt"), nil
 }
 
 func FileHelloTime(ctx *wk.HttpContext) (result wk.HttpResult, err error) {

@@ -39,7 +39,7 @@ type Controller struct {
 	actionSubscriber ActionSubscriber
 
 	//server
-	server *HttpServer
+	//server *HttpServer
 }
 
 // newController
@@ -126,7 +126,8 @@ func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 		Err:        nil,
 	}
 
-	c.server.Fire(_route, _eventStartAction, c, actionContext, ctx)
+	//c.server.Fire(_route, _eventStartAction, c, actionContext, ctx)
+	ctx.Server.Fire(_route, _eventStartAction, c, actionContext, ctx)
 
 	if c.actionSubscriber != nil {
 		c.actionSubscriber.OnActionExecuting(actionContext)
@@ -165,7 +166,8 @@ func (c *Controller) invoke(ctx *HttpContext) (result HttpResult, err error) {
 		c.actionSubscriber.OnActionExecuted(actionContext)
 	}
 
-	c.server.Fire(_route, _eventEndAction, c, actionContext, ctx)
+	//c.server.Fire(_route, _eventEndAction, c, actionContext, ctx)
+	ctx.Server.Fire(_route, _eventEndAction, c, actionContext, ctx)
 
 	return result, err
 }

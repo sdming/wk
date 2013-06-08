@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -34,6 +35,11 @@ func File(path string) *FileResult {
 
 // Execute replies to the request with the contents of FileResult.Path
 func (file *FileResult) Execute(ctx *HttpContext) error {
+	if strings.HasPrefix(file.Path, "~/") {
+		http.ServeFile(ctx.Resonse, ctx.Request, ctx.Server.MapPath(file.Path[2:]))
+		return nil
+	}
+
 	http.ServeFile(ctx.Resonse, ctx.Request, file.Path)
 	return nil
 }
@@ -50,23 +56,6 @@ func (file *FileResult) Type() string {
 
 	return ctype
 }
-
-// // Read reads data from file
-// func (file *FileResult) Read(p []byte) (n int, err error) {
-// 	if file.file != nil {
-// 		return file.file.Read(p)
-// 	}
-
-// 	dir, name := filepath.Split(file.Path)
-
-// 	file.file, err = http.Dir(dir).Open(name)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	n, err = file.file.Read(p)
-// 	return n, err
-// }
 
 // FileStreamResult
 type FileStreamResult struct {

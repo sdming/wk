@@ -17,11 +17,13 @@
                 <div>
                     <ul class="nav">
                         <li class=""><a href="#demo-qrcode">QrCode</a></li>
+                        <li><a href="#demo-file">File</a></li>
                         <li><a href="#demo-filestream">File Stream</a></li>
                         <li><a href="#demo-bundle">File Bundling</a></li>
                         <li><a href="#demo-bigpipe">BigPipe</a></li>
                         <li><a href="#demo-compress">Compress</a></li>
                         <li><a href="#demo-event">Event</a></li>
+                        <li><a href="#demo-custome">Custome Page</a></li>
                     </ul>
                 </div>
             </div>
@@ -66,11 +68,37 @@ func (qrcode *QrCodeResult) Execute(ctx *wk.HttpContext) error {
         </p>
     </section>
 
+    <section id="demo-file">
+            <div class="page-header">
+                <h3>File </h3>
+            </div>
+            <p>How to return a file</p>
+             <p class="docs-example">
+                source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>
+          
+            </p>
+            <pre class="prettyprint lang-go">
+
+func FileAbsolute(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+    return wk.File(path.Join(ctx.Server.Config.RootDir, "public/humans.txt")), nil
+}
+
+func FileRelative(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+    return wk.File("~/public/humans.txt"), nil
+}
+            </pre>
+            <p>
+                click: <a href="/file/absolute" target="_blank">/file/absolute</a> or 
+                <a href="/file/relative" target="_blank">/file/relative</a>
+                
+            </p>
+        </section>
+
     <section id="demo-filestream">
         <div class="page-header">
             <h3>File Stream</h3>
         </div>
-        <p>How to return a text file</p>
+        <p>How to return a file stream</p>
          <p class="docs-example">
             source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/model/file.go">/demo/basic/model/file.go</a>
       
@@ -208,6 +236,36 @@ func eventTraceFunc(e *wk.EventContext) {
             click: <a href="#page-profiler-modal" id="btn-event-demo" class="btn btn-info" >View Page Profiler</a>
         </p>
     </section>
+
+    <section id="demo-custome">
+        <div class="page-header">
+            <h3>Custome Page</h3>
+        </div>
+        <p>
+            How to custome 404 & error page
+        </p>
+
+        <p class="docs-example">
+            source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/controller/home.go">/demo/basic/controller/home.go</a>
+        </p>
+        <pre class="prettyprint lang-go">
+
+func HomeError(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+    return nil, errors.New("error happend")
+}
+
+func HomePanic(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+    panic("panic happend")
+    return nil, nil
+}
+
+        </pre>
+        <p>
+            click: <a href="/error" >/error</a> or <a href="/panic" >/panic</a>
+            or <a href="/foo/foo" >404</a>
+        </p>
+    </section>
+
     <div id="page-profiler-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="profiler-modal-label"
         aria-hidden="true">
         <div class="modal-header">

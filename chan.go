@@ -12,8 +12,7 @@ var (
 	defaultChanResultTimeout = 60 * time.Second
 )
 
-// ChanResult
-// TODO: doesn't work on chrome
+// ChanResult read from a chan string, and write to response
 type ChanResult struct {
 	Wait        sync.WaitGroup
 	Chan        chan string
@@ -23,7 +22,7 @@ type ChanResult struct {
 	Timeout     time.Duration
 }
 
-// Execute read string from chan and write to response
+// Execute read from Chan and write to Response until Wait done
 func (c *ChanResult) Execute(ctx *HttpContext) error {
 	ctx.ContentType(c.ContentType)
 

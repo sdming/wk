@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -87,27 +88,6 @@ func NewHttpServer(config *WebConfig) (srv *HttpServer, err error) {
 	return srv, nil
 }
 
-// // NewWebApiServer create a rest api server
-// func NewWebApiServer(config *WebConfig) (srv *HttpServer, err error) {
-// 	srv = &HttpServer{
-// 		Config: config,
-// 	}
-// 	srv.Variables = make(map[string]interface{})
-// 	srv.RouteTable = newRouteTable()
-
-// 	l := len(Processes)
-// 	srv.Processes = make([]*Process, l)
-// 	for i := 0; i < l; i++ {
-// 		if Processes[i].Name == _static {
-// 			continue
-// 		}
-// 		Processes[i].Handler.Register(srv)
-// 		srv.Processes[i] = Processes[i]
-// 	}
-
-// 	return srv, nil
-// }
-
 // init
 func (srv *HttpServer) init() error {
 	srv.Variables = make(map[string]interface{})
@@ -126,15 +106,8 @@ func (srv *HttpServer) init() error {
 
 // listenAndServe
 func (srv *HttpServer) listenAndServe() (err error) {
-	// if srv.Listener, err = net.Listen("tcp", srv.Config.Address); err != nil {
-	// 	return err
-	// }
-
-	// srv.Mux = http.NewServeMux()
-	// srv.Mux.Handle("/", srv)
 	srv.server = &http.Server{
-		Addr: srv.Config.Address,
-		//Handler:        srv.Mux,
+		Addr:           srv.Config.Address,
 		Handler:        srv,
 		ReadTimeout:    time.Duration(srv.Config.ReadTimeout) * time.Second,
 		WriteTimeout:   time.Duration(srv.Config.WriteTimeout) * time.Second,
@@ -270,6 +243,7 @@ func (s *HttpServer) buildContext(w http.ResponseWriter, r *http.Request) *HttpC
 		Request:     r,
 		Method:      r.Method,
 		RequestPath: cleanPath(strings.TrimSpace(r.URL.Path)),
+		Server:      s,
 	}
 
 	if s.Config.ViewEnable {
@@ -315,13 +289,34 @@ func (srv *HttpServer) exeProcess(ctx *HttpContext, p *Process) (err error) {
 	return nil
 }
 
-// // MapPath return physical path
-// func (srv *HttpServer) MapPath(p string) string {
+// MapPath return physical path
+func (srv *HttpServer) MapPath(file string) string {
+	return path.Join(srv.Config.RootDir, file)
+	//info, err := os.Stat(f)
+	// if err != nil || info.IsDir() {
+	// 	return ""
+	// }
+	// return f
+}
 
-// 	f := path.Join(srv.Config.PublicDir, p)
-// 	info, err := os.Stat(f)
-// 	if err != nil || info.IsDir() {
-// 		return ""
+// // serverFile
+// func (srv *HttpServer) serverFile(ctx *HttpContext, file string, status int) error {
+// 	fullPath := path.Join(srv.Config.RootDir, file)
+// 	_, err := os.Stat(fullPath)
+// 	if err != nil {
+// 		return err
 // 	}
-// 	return f
+// 	var f *os.File
+// 	f, err = os.Open(fullPath)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer f.Close()
+// 	ctx.ContentType(mime.TypeByExtension(filepath.Ext(fullPath)))
+// 	ctx.Status(status)
+// 	//io.Copy(dst·3, src·4)
+// 	//http.ServeContent(ctx.Resonse, ctx.Request, fullPath, info.ModTime(), f)
+// 	http.ServeFile(ctx.Resonse, ctx.Request, fullPath)
+// 	return nil
+
 // }

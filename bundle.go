@@ -14,14 +14,13 @@ import (
 	"time"
 )
 
-// BundleResult is bundle of files
-// TODO: will merge from demo:FileJsBundling
-// TODO: will wrap files with something like MutiReadSeeker, can call ServerContent
+// BundleResult is bundle of Files
+// TODO: cache?
 type BundleResult struct {
 	Files []string
 }
 
-// Execute
+// Execute read from BundleResult.Files and write to HttpContext.Response
 func (b *BundleResult) Execute(ctx *HttpContext) error {
 	if len(b.Files) == 0 {
 		return errors.New("bundle files is invalid")
@@ -73,7 +72,7 @@ func copyFromFile(file string, w io.Writer) error {
 	return err
 }
 
-// ContentType return mime type of files
+// ContentType return mime type of BundleResult.Files[0]
 func (b *BundleResult) Type() string {
 	if len(b.Files) == 0 {
 		return ""

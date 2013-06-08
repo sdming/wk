@@ -11,15 +11,14 @@ import (
 	"strings"
 )
 
+// compresser is interface of gzip/flate writer
 type compresser interface {
 	Flush() error
 	Close() error
 	Write(p []byte) (int, error)
 }
 
-// CompressProcessor compress http response with gzip or deflate
-// TODO: copy header from original result
-// TODO: configurable
+// CompressProcessor compress http response with gzip/deflate
 // TODO: filter by MimeType
 type CompressProcessor struct {
 	Enable   bool
@@ -47,7 +46,7 @@ func (cp *CompressProcessor) Register(server *HttpServer) {
 	cp.Level = flate.BestSpeed
 }
 
-// Execute convert result to  CompressResult
+// Execute convert ctx.Response to compressResponseWriter
 func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 	if ctx.Result == nil || ctx.Error != nil {
 		return

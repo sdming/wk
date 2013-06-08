@@ -26,11 +26,18 @@ func (v *ViewResult) String() string {
 	return v.File
 }
 
+func executeViewFile(file string, ctx *HttpContext) error {
+	view := &ViewResult{
+		File: file,
+	}
+	return view.Execute(ctx)
+}
+
 // Execute
 func (v *ViewResult) Execute(ctx *HttpContext) error {
 	buffer := &bytes.Buffer{}
 
-	err := DefaultViewEngine.Execte(buffer, v.File, ctx.ViewData)
+	err := ctx.Server.ViewEngine.Execte(buffer, v.File, ctx.ViewData)
 	if err != nil {
 
 		return err

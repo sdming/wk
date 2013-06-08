@@ -62,7 +62,7 @@ const (
 var (
 	msgServerTimeout     = "server timeout"
 	msgServerInternalErr = http.StatusText(http.StatusInternalServerError)
-	msgNotFound          = "404 page not found"
+	msgNotFound          = http.StatusText(http.StatusNotFound)
 	msgNoResult          = "no result"
 	msgNoView            = "view not found"
 	msgNoAction          = "can not find action"

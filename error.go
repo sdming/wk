@@ -6,6 +6,7 @@ package wk
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // ErrorResult return error to client
@@ -31,8 +32,30 @@ func Error(message string) *ErrorResult {
 }
 
 // Execute write response
-// TODO: cutomer error view page
 func (e *ErrorResult) Execute(ctx *HttpContext) error {
+	if ctx.Server.Config.ErrorPageEnable {
+		accetps := ctx.Accept()
+		if strings.Contains(accetps, "text/html") {
+			if f := ctx.Server.MapPath("public/error.html"); isFileExists(f) {
+				http.ServeFile(ctx.Resonse, ctx.Request, f)
+				return nil
+			}
+			if ctx.Server.Config.ViewEnable {
+				if f := ctx.Server.MapPath("views/error.html"); isFileExists(f) {
+					ctx.ViewData["ctx"] = ctx
+					ctx.ViewData["error"] = e
+					return executeViewFile("error.html", ctx)
+				}
+			}
+		}
+		if strings.Contains(accetps, "text/plain") {
+			if f := ctx.Server.MapPath("public/error.txt"); isFileExists(f) {
+				http.ServeFile(ctx.Resonse, ctx.Request, f)
+				return nil
+			}
+		}
+	}
+
 	http.Error(ctx.Resonse, e.Message, http.StatusInternalServerError)
 	return nil
 }

@@ -91,6 +91,8 @@ func (r RouteData) StrOr(name string, v string) string {
 
 // HttpContext is wrap of request & response
 type HttpContext struct {
+	// Server is current http server
+	Server *HttpServer
 
 	// Request is *http.Request
 	Request *http.Request

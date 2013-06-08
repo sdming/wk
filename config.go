@@ -96,6 +96,12 @@ type WebConfig struct {
 	// IndexesEnable like Indexes of apache 
 	IndexesEnable bool
 
+	// NotFoundPageEnable
+	NotFoundPageEnable bool
+
+	// ErrorPageEnable
+	ErrorPageEnable bool
+
 	// Debug is true if run in debug model
 	Debug bool
 }
@@ -137,17 +143,19 @@ func defaultConfig() *WebConfig {
 	viewdir := path.Join(rootdir, defaultViewDir)
 
 	conf := &WebConfig{
-		Address:        defaultAddress,
-		RootDir:        rootdir,
-		PublicDir:      publicdir,
-		ConfigDir:      confdir,
-		ViewDir:        viewdir,
-		ReadTimeout:    defaultReadTimeout,
-		SessionEnable:  true,
-		SessionTimeout: defaultSessionTimeout,
-		SessionDriver:  defaultSessionDriver,
-		ViewEnable:     true,
-		IndexesEnable:  true,
+		Address:            defaultAddress,
+		RootDir:            rootdir,
+		PublicDir:          publicdir,
+		ConfigDir:          confdir,
+		ViewDir:            viewdir,
+		ReadTimeout:        defaultReadTimeout,
+		SessionEnable:      true,
+		SessionTimeout:     defaultSessionTimeout,
+		SessionDriver:      defaultSessionDriver,
+		ViewEnable:         true,
+		IndexesEnable:      true,
+		NotFoundPageEnable: true,
+		ErrorPageEnable:    true,
 	}
 
 	return conf
