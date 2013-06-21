@@ -178,7 +178,7 @@ func (uc *UserController) Location(ctx *wk.HttpContext) (result wk.HttpResult, e
 		users := userRepo.GetByLocation(location)
 		ctx.ViewData["users"] = users
 	}
-	return wk.View("user/Location.html"), nil
+	return wk.View("user/location.html"), nil
 }
 
 // get: /user/index/

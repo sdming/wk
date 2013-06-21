@@ -135,9 +135,8 @@ func (srv *HttpServer) error(ctx *HttpContext, message string, code int) {
 	http.Error(ctx.Resonse, message, code)
 }
 
-// Start start server instance and listent request
-func (srv *HttpServer) Start() (err error) {
-
+// Setup initialize server instance
+func (srv *HttpServer) Setup() (err error) {
 	if Logger == nil {
 		Logger = log.New(os.Stdout, _serverName+_version, log.Ldate|log.Ltime)
 	}
@@ -168,8 +167,18 @@ func (srv *HttpServer) Start() (err error) {
 		Logger.Println("process", p.Method, p.Path, p.Name)
 	}
 
+	return nil
+}
+
+// Start start server instance and listent request
+func (srv *HttpServer) Start() (err error) {
+	if err = srv.Setup(); err != nil {
+		Logger.Println("http server setup fail:", err)
+		return
+	}
+
 	if err = srv.listenAndServe(); err != nil {
-		Logger.Println("http server server fail:", err)
+		Logger.Println("http server listen fail:", err)
 		return
 	}
 

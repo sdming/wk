@@ -64,6 +64,7 @@ func (qrcode *QrCodeResult) Execute(ctx *wk.HttpContext) error {
 
         </pre>
         <p>
+                <span class="label label-warning">does not work on GAE</span>
             click: <a href="/qr/show/?text=hello" target="_blank">/qr/show/?text=hello</a>
         </p>
     </section>
@@ -88,6 +89,7 @@ func FileRelative(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 }
             </pre>
             <p>
+                
                 click: <a href="/file/absolute" target="_blank">/file/absolute</a> or 
                 <a href="/file/relative" target="_blank">/file/relative</a>
                 
@@ -195,7 +197,7 @@ for i := 0; i < l; i++ {
         </div>
         <p>
             How to write a Processor to compress http response
-            <span class="label label-warning">bugs</span>
+   
         </p>
         <p class="docs-example">
             source code:<a href="https://github.com/sdming/wk/blob/master/compress.go">/compress.go</a>

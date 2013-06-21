@@ -136,8 +136,9 @@ func (conf *WebConfig) init() {
 }
 
 // defaultConfig return *WebConfig with default value
-func defaultConfig() *WebConfig {
-	rootdir := defaultRootPath()
+func defaultConfig(rootdir string) *WebConfig {
+	//rootdir := defaultRootPath()
+	//rootdir := "./"
 	publicdir := path.Join(rootdir, defaultPubicDir)
 	confdir := path.Join(rootdir, defaultConfigDir)
 	viewdir := path.Join(rootdir, defaultViewDir)
@@ -163,7 +164,7 @@ func defaultConfig() *WebConfig {
 
 // NewDefaultConfig return *WebConfig with default value
 func NewDefaultConfig() *WebConfig {
-	conf := defaultConfig()
+	conf := defaultConfig("./")
 	conf.init()
 	return conf
 }
@@ -211,7 +212,7 @@ func ConfigFromFile(file string) (conf *WebConfig, err error) {
 	if node, err = kson.ParseFile(file); err != nil {
 		return
 	}
-	conf = defaultConfig()
+	conf = defaultConfig("./")
 	if err = node.Value(conf); err != nil {
 		return
 	}

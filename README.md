@@ -34,7 +34,11 @@ go get github.com/sdming/wk
 
 Document
 ---
-Take time to translate documents to english.  
+Take time to translate documents to english. 
+
+Demo  
+---
+[http://gwk-demo.appspot.com]()
 
 Getting Started
 ---
@@ -346,7 +350,6 @@ you can find examples in folder "./test/views/" or "./demo/basic/views/"
 Example
 ---
 
-TODO:  
 * 	basic example  
 	run default http server   
 	file: ./demo/basic/main.go  
@@ -384,7 +387,11 @@ TODO:
 
 * 	view example  
 	how to use viewengine  
-	file: ./demo/basic/controller/user.go   
+	file: ./demo/basic/controller/user.go 
+
+*	GAE example  
+	how to deploy on GAE  
+	file: ./demo/gae  	  
 
 
 ORM
