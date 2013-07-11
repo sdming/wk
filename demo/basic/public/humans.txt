@@ -2,7 +2,7 @@
 # The humans responsible & technology colophon
 
 # TEAM
-
+	sdming dev
     <name> -- <role> -- <twitter>
 
 # THANKS
@@ -13,4 +13,4 @@
 
     HTML5, CSS3
     Normalize.css, jQuery, Modernizr
-    Golang, Web, GWK
+    Golang, Web, GWK  

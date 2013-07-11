@@ -2,8 +2,8 @@
 // license that can be found in the LICENSE file.
 
 /*
-gwk is web server engine in GO language
+fsw is File System Watcher, it monitoring folders and notify listeners if any thing changed. 
 
 */
 
-package wk
+package fsw

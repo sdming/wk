@@ -28,6 +28,7 @@ func main() {
 	controller.RegisterBasicRoute(server)
 	controller.RegisterUserRoute(server)
 	controller.RegisterDocRoute(server)
+	controller.RegisterConfigRoute(server)
 
 	model.RegisterDataRoute(server)
 

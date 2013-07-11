@@ -53,6 +53,7 @@ Getting Started
 	}
 
 	server.RouteTable.Get("/data/top/{count}").To(...)
+	server.RouteTable.Path("/basic#/{action}/{id}").ToController(...)
 
 	server.Start()
 

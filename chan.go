@@ -12,7 +12,7 @@ var (
 	defaultChanResultTimeout = 60 * time.Second
 )
 
-// ChanResult read from a chan string, and write to response
+// ChanResult read from a chan string, then write to response
 type ChanResult struct {
 	Wait        sync.WaitGroup
 	Chan        chan string
@@ -22,7 +22,7 @@ type ChanResult struct {
 	Timeout     time.Duration
 }
 
-// Execute read from Chan and write to Response until Wait done
+// Execute read from Chan then write to Response, until Wait done
 func (c *ChanResult) Execute(ctx *HttpContext) error {
 	ctx.ContentType(c.ContentType)
 

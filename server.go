@@ -72,6 +72,7 @@ func NewDefaultServer() (srv *HttpServer, err error) {
 	var conf *WebConfig
 
 	conf, err = ReadDefaultConfigFile()
+
 	if err != nil {
 		conf = NewDefaultConfig()
 	}
@@ -97,7 +98,7 @@ func (srv *HttpServer) init() error {
 	l := len(Processes)
 	srv.Processes = make([]*Process, l)
 	for i := 0; i < l; i++ {
-		Processes[i].Handler.Register(srv)
+		//Processes[i].Handler.Register(srv)
 		srv.Processes[i] = Processes[i]
 	}
 
@@ -142,12 +143,22 @@ func (srv *HttpServer) Setup() (err error) {
 	}
 	Logger.Println("http server is starting")
 
-	Logger.Println("Address:", srv.Config.Address,
+	Logger.Println("http server config",
+		"\n\t Address:", srv.Config.Address,
 		"\n\t RootDir:", srv.Config.RootDir,
 		"\n\t ConfigDir:", srv.Config.ConfigDir,
 		"\n\t PublicDir:", srv.Config.PublicDir,
 		"\n\t Debug:", srv.Config.Debug,
 	)
+
+	if len(srv.Processes) == 0 {
+		return errors.New("server processes is empty")
+	}
+
+	for _, p := range srv.Processes {
+		Logger.Println("process", p.Method, p.Path, p.Name)
+		p.Handler.Register(srv)
+	}
 
 	if err = srv.configSession(); err != nil {
 		return
@@ -157,14 +168,6 @@ func (srv *HttpServer) Setup() (err error) {
 		if err = srv.configViewEngine(); err != nil {
 			return
 		}
-	}
-
-	if len(srv.Processes) == 0 {
-		return errors.New("server processes is empty")
-	}
-
-	for _, p := range srv.Processes {
-		Logger.Println("process", p.Method, p.Path, p.Name)
 	}
 
 	return nil

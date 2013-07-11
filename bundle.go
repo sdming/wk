@@ -15,12 +15,11 @@ import (
 )
 
 // BundleResult is bundle of Files
-// TODO: cache?
 type BundleResult struct {
 	Files []string
 }
 
-// Execute read from BundleResult.Files and write to HttpContext.Response
+// Execute write content of files to HttpContext.Response
 func (b *BundleResult) Execute(ctx *HttpContext) error {
 	if len(b.Files) == 0 {
 		return errors.New("bundle files is invalid")
@@ -35,7 +34,7 @@ func (b *BundleResult) Execute(ctx *HttpContext) error {
 			return err
 		}
 		if info.IsDir() {
-			return errors.New("bundle files is invalid")
+			return errors.New("bundle file is invalid:" + file)
 		}
 
 		if info.ModTime().After(modtime) {
@@ -51,7 +50,7 @@ func (b *BundleResult) Execute(ctx *HttpContext) error {
 
 	buffer := &bytes.Buffer{}
 	for _, file := range b.Files {
-		err := copyFromFile(file, buffer)
+		err := readFromFile(file, buffer)
 
 		if err != nil {
 			return err
@@ -62,7 +61,7 @@ func (b *BundleResult) Execute(ctx *HttpContext) error {
 	return nil
 }
 
-func copyFromFile(file string, w io.Writer) error {
+func readFromFile(file string, w io.Writer) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err

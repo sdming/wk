@@ -1,0 +1,401 @@
+{{set . "title" "Config Demo" }}
+{{import "_layout.html" }}
+
+{{define "head" }}
+<style>
+
+</style>
+
+{{end}}
+
+{{define "body" }}
+
+<div class="container">
+
+    <p class="docs-example">
+        source code:<a href="https://github.com/sdming/wk/blob/master/demo/basic/controller/config.go">/demo/basic/controller/config.go</a>
+   </p>
+
+<section id="config-config">
+        <div class="page-header">
+            <h3>Config Data</h3>
+        </div>
+        <p>
+            app.conf file
+        </p>
+        <pre class="prettyprint linenums lang-go">
+#app config file demo
+
+#string
+key_string: demo
+
+#string
+key_int:    101
+
+#bool
+key_bool:   true
+
+#float
+key_float:  3.14
+
+#map
+key_map:    {
+    key1:   key1 value
+    key2:   key2 value
+}
+
+#array
+key_array:  [
+    item 1      
+    item 2
+]
+
+#struct
+key_struct: {
+    Driver:     mysql           
+    Host:       127.0.0.1
+    User:       user
+    Password:   password            
+}
+
+#composite
+key_config: {   
+    Log_Level:  debug
+    Listen:     8000
+
+    Roles: [
+        {
+            Name:   user
+            Allow:  [
+                /user       
+                /order
+            ]
+        } 
+        {
+            Name:   *               
+            Deny:   [
+                /user
+                /order
+            ]
+        } 
+    ]
+
+    Db_Log: {
+        Driver:     mysql           
+        Host:       127.0.0.1
+        User:       user
+        Password:   password
+        Database:   log
+    }
+
+    Env:    {
+        auth:       http://auth.io
+        browser:    ie, chrome, firefox, safari
+    }
+}
+
+        </pre>
+        <p>
+            
+        </p>
+    </section>
+
+   <section id="config-define">
+        <div class="page-header">
+            <h3>Struct define</h3>
+        </div>
+        <p>
+            
+        </p>
+        <pre class="prettyprint linenums lang-go">
+type Driver struct {
+    Driver   string
+    Host     string
+    User     string
+    Password string
+    A        string
+    B        string
+}
+
+type Config struct {
+    Log_Level string
+    Listen    uint
+    Roles     []Role
+    Db_Log    Db
+    Env       map[string]string
+}
+
+type Role struct {
+    Name  string
+    Allow []string
+    Deny  []string
+}
+
+type Db struct {
+    Driver   string
+    Host     string
+    User     string
+    Password string
+}
+        </pre>
+        <p>
+            
+        </p>
+    </section>
+
+
+    <section id="config-Dump">
+        <div class="page-header">
+            <h3>Dump</h3>
+        </div>
+        <p>
+            Dump node with kson format
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) Dump(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    return wk.Data(c.node.MustChild("key_config").Dump()), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/dump">/config/dump</a>
+        </p>
+    </section>
+
+    <section id="config-Child">
+        <div class="page-header">
+            <h3>Child</h3>
+        </div>
+        <p>Child() return child node by name</p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) Child(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    _, ok := c.node.Child("key_string")
+    return wk.Data(ok), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/child">/config/child</a>
+        </p>
+    </section>
+
+    <section id="config-Query">
+        <div class="page-header">
+            <h3>Query</h3>
+        </div>
+        <p>
+            Query children node
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) Query(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    // maybe support "a b[@field=xxx] c d " later
+    n, ok := c.node.Query("key_config Db_Log Host")
+    if ok {
+        return wk.Data(n.Literal), nil
+    }
+    return wk.Data(ok), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/query">/config/query</a>
+        </p>
+    </section>
+
+    <section id="config-ChildStringOrDefault">
+        <div class="page-header">
+            <h3>ChildStringOrDefault</h3>
+        </div>
+        <p>
+            Get child node value, return defaultValue if node doesn't exist
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) ChildStringOrDefault(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    //ChildIntOrDefault, ChildUintOrDefault, ChildFloatOrDefault, ChildBoolOrDefault, ChildStringOrDefault
+    s := c.node.ChildStringOrDefault("key_string_not", "default value")
+    return wk.Data(s), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/childstringordefault">/config/childstringordefault</a>
+        </p>
+    </section>
+
+    <section id="config-ChildInt">
+        <div class="page-header">
+            <h3>ChildInt</h3>
+        </div>
+        <p>
+            Get child node value, panic if node doesn't exist
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) ChildInt(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    //ChildInt, ChildUint, ChildFloat, ChildBool, ChildString
+    i := c.node.ChildInt("key_int")
+    return wk.Data(i), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/childint">/config/childint</a>
+        </p>
+    </section>
+
+    <section id="config-Bool">
+        <div class="page-header">
+            <h3>Bool</h3>
+        </div>
+        <p>
+            Get node value
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) Bool(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    //Int, Uint, Float, Bool, String
+    b, err := c.node.MustChild("key_bool").Bool()
+    if err != nil {
+        return nil, err
+    }
+    return wk.Data(b), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/bool">/config/bool</a>
+        </p>
+    </section>
+
+    <section id="config-Slice">
+        <div class="page-header">
+            <h3>Slice</h3>
+        </div>
+        <p>
+            Convert node to []string
+        </p>
+        <pre class="prettyprint linenums lang-go">
+	        
+func (c *ConfigController) Slice(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    data, err := c.node.MustChild("key_array").Slice()
+    if err != nil {
+        return nil, err
+    }
+    return wk.Data(data), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/slice">/config/slice</a>
+        </p>
+    </section>
+
+    <section id="config-Map">
+        <div class="page-header">
+            <h3>Map</h3>
+        </div>
+        <p>
+            Convert node to map[string]string
+        </p>
+        <pre class="prettyprint linenums lang-go">
+            
+func (c *ConfigController) Map(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    data, err := c.node.MustChild("key_map").Map()
+    if err != nil {
+        return nil, err
+    }
+    return wk.Data(data), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/map">/config/map</a>
+        </p>
+    </section>
+
+    <section id="config-Value">
+        <div class="page-header">
+            <h3>Value</h3>
+        </div>
+        <p>
+            Extend node to interface{}
+        </p>
+        <pre class="prettyprint linenums lang-go">
+            
+func (c *ConfigController) Value(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    v := Driver{
+        Driver:   "driver",
+        Host:     "host",
+        User:     "user",
+        Password: "password",
+        A:        "aaa",
+        B:        "bbb",
+    }
+
+    err := c.node.MustChild("key_struct").Value(&v)
+    if err != nil {
+        return nil, err
+    }
+    return wk.Data(v), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/value">/config/value</a>
+        </p>
+    </section>
+
+    <section id="config-Composite">
+        <div class="page-header">
+            <h3>Composite</h3>
+        </div>
+        <p>
+            A example
+        </p>
+        <pre class="prettyprint linenums lang-go">
+            
+func (c *ConfigController) Composite(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    conf := &Config{}
+    err := c.node.MustChild("key_config").Value(conf)
+    if err != nil {
+        return nil, err
+    }
+    return wk.Data(conf), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/composite">/config/composite</a>
+        </p>
+    </section>
+
+<section id="config-refresh">
+        <div class="page-header">
+            <h3>Refresh</h3>
+        </div>
+        <p>
+            Gwk will reload app.conf if it modified, update value of key_string then try again.
+        </p>
+        <pre class="prettyprint linenums lang-go">
+
+func (c *ConfigController) Refresh(ctx *wk.HttpContext) (wk.HttpResult, error) {
+    s := c.node.ChildString("key_string")
+    return wk.Data(s), nil
+}
+        </pre>
+        <p>
+            click: <a class="api-link" href="/config/refresh">/config/refresh</a>
+        </p>
+    </section>
+
+</div>
+
+
+{{end}}
+
+{{define "script" }}
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        prettyPrint();
+
+    });
+
+
+
+</script>
+ {{end}}

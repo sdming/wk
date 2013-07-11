@@ -19,7 +19,7 @@ type compresser interface {
 }
 
 // CompressProcessor compress http response with gzip/deflate
-// TODO: filter by MimeType
+// TODO: filter by MimeType?
 type CompressProcessor struct {
 	Enable   bool
 	Level    int
@@ -61,8 +61,8 @@ func (cp *CompressProcessor) Execute(ctx *HttpContext) {
 		return
 	}
 
-	var contenType string
-	if ctx.ResHeader("Content-Type") == "" {
+	contenType := ctx.ResHeader("Content-Type")
+	if contenType == "" {
 		if typ, ok := ctx.Result.(ContentTyper); ok {
 			contenType = typ.Type()
 		} else {

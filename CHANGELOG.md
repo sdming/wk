@@ -1,6 +1,14 @@
+## 0.7 (2013-07-11)
+- watch files & reload (app.conf, views, staic)  
+- add demo of config  
+- can cache static files in memory   
+- add demo of plugin config  
+
+
+
 ## 0.6.1 (2013-06-21)
 - add GAE demo  
-- build demo web site on GAE. http://gwk-demo.appspot.com/  
+- publish demo web site on GAE. http://gwk-demo.appspot.com/  
 
 
 ## 0.6 (2013-06-05)

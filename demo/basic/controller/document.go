@@ -56,6 +56,11 @@ func (uc *DocController) SessionDemo(ctx *wk.HttpContext) (result wk.HttpResult,
 	return wk.View("doc/session_demo.html"), nil
 }
 
+// get: /doc/configdemo
+func (uc *DocController) ConfigDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+	return wk.View("doc/config_demo.html"), nil
+}
+
 // get: /doc/otherdemo
 func (uc *DocController) OtherDemo(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
 	return wk.View("doc/other_demo.html"), nil

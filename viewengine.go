@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sdming/kiss/gotype"
+	"github.com/sdming/wk/fsw"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -16,26 +17,26 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 )
 
-// DefaultViewEngine
-// TODO: global? move to httpserver?
-//var DefaultViewEngine ViewEngine
-
 // configViewEngine
-// TODO: remove DefaultViewEngine?
 func (srv *HttpServer) configViewEngine() error {
-	//TODO:move to config file
-	ve := &GoHtml{}
-	err := ve.Register(srv)
+	if !srv.Config.ViewEnable || srv.Config.ViewDir == "" {
+		return nil
+	}
+
+	ve, err := NewGoHtml(srv.Config.ViewDir)
 	if err != nil {
 		return err
 	}
-
-	//DefaultViewEngine = ve
+	if err = ve.Register(srv); err != nil {
+		return err
+	}
 	srv.ViewEngine = ve
-	Logger.Printf("ViewEngine: %v; \n", ve)
+	Logger.Println("ViewEngine:", ve)
 	return nil
+
 }
 
 // func Register(name string, engine ViewEngine) {
@@ -58,6 +59,10 @@ type GoHtml struct {
 	EnableCache    bool
 	TemplatesCache map[string]*template.Template
 	Funcs          template.FuncMap
+
+	sync.Mutex
+	watcher    *fsw.FsWatcher
+	dependence map[string][]string
 }
 
 // NewGoHtml return a *GoHtml, it retur error if basePath doesn't exists
@@ -81,7 +86,11 @@ func NewGoHtml(basePath string) (*GoHtml, error) {
 		BasePath:       basePath,
 		TemplatesCache: make(map[string]*template.Template),
 		Funcs:          make(template.FuncMap),
+		EnableCache:    false,
+		dependence:     make(map[string][]string, 0),
 	}
+
+	ve.dependence["a"] = make([]string, 0)
 
 	for name, fn := range TemplateFuncs {
 		ve.Funcs[name] = fn
@@ -89,7 +98,6 @@ func NewGoHtml(basePath string) (*GoHtml, error) {
 	ve.Funcs["partial"] = ve.renderfile // render a template file
 
 	return ve, nil
-
 }
 
 // Register initialize viewengine
@@ -111,11 +119,35 @@ func (ve *GoHtml) Register(server *HttpServer) error {
 	}
 	ve.Funcs["partial"] = ve.renderfile // render a template file
 
-	if server.Config.Debug {
-		ve.EnableCache = false
+	if conf, ok := server.Config.PluginConfig.Child("gohtml"); ok {
+		ve.EnableCache = conf.ChildBoolOrDefault("cache_enable", false)
+		if ve.EnableCache {
+			if fw, err := fsw.NewFsWatcher(ve.BasePath); err == nil {
+				ve.watcher = fw
+				ve.watcher.Listen(ve.notify)
+			}
+		}
+
+		Logger.Println("gohtml", "cache_enable:", ve.EnableCache, "watcher", ve.watcher)
 	}
 
 	return nil
+}
+
+func (ve *GoHtml) notify(e fsw.Event) {
+	ve.Lock()
+	defer ve.Unlock()
+
+	key := strings.ToLower(cleanFilePath(e.Name))
+	delete(ve.TemplatesCache, key)
+
+	if d, ok := ve.dependence[key]; ok && len(d) > 0 {
+		for i := 0; i < len(d); i++ {
+			delete(ve.TemplatesCache, d[i])
+		}
+	}
+	delete(ve.dependence, key)
+
 }
 
 // String
@@ -135,15 +167,49 @@ func (ve *GoHtml) Execte(wr io.Writer, file string, data interface{}) error {
 	return t.Execute(wr, data)
 }
 
+func (ve *GoHtml) getCache(file string) (t *template.Template, ok bool) {
+	ve.Lock()
+	defer ve.Unlock()
+
+	key := strings.ToLower(cleanFilePath(path.Join(ve.BasePath, file)))
+	t, ok = ve.TemplatesCache[key]
+	return t, ok
+}
+
+func (ve *GoHtml) setCache(file string, t *template.Template) {
+	ve.Lock()
+	defer ve.Unlock()
+
+	key := strings.ToLower(cleanFilePath(path.Join(ve.BasePath, file)))
+	ve.TemplatesCache[key] = t
+}
+
+func (ve *GoHtml) setDepend(partial, template string) {
+	ve.Lock()
+	defer ve.Unlock()
+
+	key := strings.ToLower(partial)
+	d, ok := ve.dependence[key]
+
+	if ok && d != nil {
+		d = append(d, strings.ToLower(template))
+		ve.dependence[key] = d
+	} else {
+		d = make([]string, 1, 31)
+		d[0] = strings.ToLower(template)
+		ve.dependence[key] = d
+	}
+}
+
 // findTemplate
 func (ve *GoHtml) findTemplate(file string) (t *template.Template, err error) {
 	if ve.EnableCache {
-		file = strings.ToLower(file)
-		t = ve.TemplatesCache[file]
-		if t == nil {
+		var ok bool
+
+		if t, ok = ve.getCache(file); !ok {
 			t, err = ve.parse(file)
 			if err == nil {
-				ve.TemplatesCache[file] = t
+				ve.setCache(file, t)
 			}
 		}
 	} else {
@@ -156,7 +222,7 @@ func (ve *GoHtml) readImportFile(file string) []byte {
 	if file == "" {
 		return nil
 	}
-	file = path.Join(ve.BasePath, file)
+
 	if !isFileExists(file) {
 		return nil
 	}
@@ -173,8 +239,7 @@ func (ve *GoHtml) parse(file string) (*template.Template, error) {
 		return nil, errors.New("file can't be empty")
 	}
 
-	file = path.Join(ve.BasePath, file)
-	file = cleanFilePath(file)
+	file = cleanFilePath(path.Join(ve.BasePath, file))
 	if !isFileExists(file) {
 		return nil, errors.New("file doesn't exists " + file)
 	}
@@ -202,7 +267,9 @@ func (ve *GoHtml) parse(file string) (*template.Template, error) {
 		if importre.Match(line) {
 			fileToImport := importre.FindStringSubmatch(string(line))[1]
 			if fileToImport != "" {
+				fileToImport = path.Join(ve.BasePath, fileToImport)
 				data.Write(ve.readImportFile(fileToImport))
+				ve.setDepend(fileToImport, file)
 			}
 			continue
 		}

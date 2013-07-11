@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sdming/kiss/kson"
+	"github.com/sdming/wk/fsw"
 	"os"
 	"path"
 )
@@ -104,6 +105,8 @@ type WebConfig struct {
 
 	// Debug is true if run in debug model
 	Debug bool
+
+	watcher *fsw.FsWatcher
 }
 
 // String
@@ -115,6 +118,21 @@ func (conf *WebConfig) String() string {
 	return fmt.Sprintf("%#v", conf)
 }
 
+func (conf *WebConfig) notify(e fsw.Event) {
+	name := cleanFilePath(e.Name)
+	Logger.Println("File notify", e)
+
+	if isFileExists(name) {
+		node, err := kson.ParseFile(name)
+		if err != nil {
+			Logger.Println("Parse file error", name, err)
+		} else {
+			Logger.Println("Refresh AppConfig")
+			conf.AppConfig = node
+		}
+	}
+}
+
 // init
 func (conf *WebConfig) init() {
 	if conf == nil {
@@ -123,8 +141,21 @@ func (conf *WebConfig) init() {
 
 	if isDirExists(conf.ConfigDir) {
 		appFile := path.Join(conf.ConfigDir, appConfigFile)
+
 		if isFileExists(appFile) {
-			conf.AppConfig, _ = kson.ParseFile(appFile)
+			node, err := kson.ParseFile(appFile)
+			if err != nil {
+				Logger.Println("Parse file error", appFile, err)
+			} else {
+				conf.AppConfig = node
+			}
+
+			if fw, err := fsw.NewFsWatcher(appFile); err == nil {
+				conf.watcher = fw
+				conf.watcher.Listen(conf.notify)
+			} else {
+				Logger.Println("Watch file error", appFile, err)
+			}
 		}
 
 		pluginFile := path.Join(conf.ConfigDir, pluginConfigFile)
@@ -212,10 +243,12 @@ func ConfigFromFile(file string) (conf *WebConfig, err error) {
 	if node, err = kson.ParseFile(file); err != nil {
 		return
 	}
+
 	conf = defaultConfig("./")
 	if err = node.Value(conf); err != nil {
 		return
 	}
+
 	conf.init()
 	return
 
