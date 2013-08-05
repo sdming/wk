@@ -6,6 +6,7 @@ import (
 	"code.google.com/p/rsc/qr"
 	"errors"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"log"
 )
 
@@ -28,6 +29,10 @@ func (qrcode *QrCodeResult) Execute(ctx *wk.HttpContext) error {
 	ctx.Write(png)
 
 	return nil
+}
+
+func init() {
+	boot.Boot(RegisterQrRoute)
 }
 
 func RegisterQrRoute(server *wk.HttpServer) {

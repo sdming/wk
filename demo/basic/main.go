@@ -12,8 +12,9 @@ package main
 import (
 	"fmt"
 	"github.com/sdming/wk"
-	"github.com/sdming/wk/demo/basic/controller"
-	"github.com/sdming/wk/demo/basic/model"
+	"github.com/sdming/wk/demo/basic/boot"
+	_ "github.com/sdming/wk/demo/basic/controller"
+	_ "github.com/sdming/wk/demo/basic/model"
 )
 
 func main() {
@@ -25,39 +26,9 @@ func main() {
 		return
 	}
 
-	controller.RegisterBasicRoute(server)
-	controller.RegisterUserRoute(server)
-	controller.RegisterDocRoute(server)
-	controller.RegisterConfigRoute(server)
-
-	model.RegisterDataRoute(server)
-
-	//demo, show to define custome httpresult
-	if enableQrCode := true; enableQrCode {
-		model.RegisterQrRoute(server)
+	for _, fn := range boot.Inits {
+		fn(server)
 	}
-
-	if enableEventTrace := true; enableEventTrace {
-		model.RegisterEventTrace(server)
-	}
-
-	if enableCompress := true; enableCompress {
-		server.Processes.InsertBefore("_render", wk.NewCompressProcess("compress_test", "*", "/compress/"))
-	}
-
-	if enableFile := true; enableFile {
-		model.RegisterFileRoute(server)
-	}
-
-	if enableBigpipe := true; enableBigpipe {
-		model.RegisterBigPipeRoute(server)
-	}
-
-	if debugSession := true; debugSession {
-		controller.RegisterSessionRoute(server)
-	}
-
-	controller.RegisterHomeRoute(server)
 
 	server.Start()
 

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"strconv"
 )
 
@@ -119,6 +120,10 @@ func DataType() Data {
 		Float: 3.14,
 		Byte:  8,
 	}
+}
+
+func init() {
+	boot.Boot(RegisterDataRoute)
 }
 
 func RegisterDataRoute(server *wk.HttpServer) {

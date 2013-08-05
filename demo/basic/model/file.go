@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"log"
 	"mime/multipart"
 	"os"
@@ -18,6 +19,10 @@ import (
 	"strings"
 	"time"
 )
+
+func init() {
+	boot.Boot(RegisterFileRoute)
+}
 
 var serverPublicBase string
 

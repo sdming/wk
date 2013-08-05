@@ -10,6 +10,7 @@ package controller
 import (
 	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 )
 
 type Driver struct {
@@ -51,6 +52,10 @@ func (c *ConfigController) node() *kson.Node {
 }
 
 var config *ConfigController
+
+func init() {
+	boot.Boot(RegisterConfigRoute)
+}
 
 func RegisterConfigRoute(server *wk.HttpServer) {
 	config = &ConfigController{}

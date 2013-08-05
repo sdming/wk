@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"strings"
 	"time"
 )
@@ -12,6 +13,10 @@ type EventTrace struct {
 	Module    string
 	Name      string
 	Timestamp int64
+}
+
+func init() {
+	boot.Boot(RegisterEventTrace)
 }
 
 func RegisterEventTrace(server *wk.HttpServer) {

@@ -9,10 +9,15 @@ package model
 import (
 	"fmt"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"math/rand"
 	"sync"
 	"time"
 )
+
+func init() {
+	boot.Boot(RegisterBigPipeRoute)
+}
 
 func RegisterBigPipeRoute(server *wk.HttpServer) {
 	// url: get /bigpipe/test.html

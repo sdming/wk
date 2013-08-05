@@ -10,12 +10,17 @@ package controller
 import (
 	"errors"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 )
 
 type HomeController struct {
 }
 
 var home *HomeController
+
+func init() {
+	boot.Boot(RegisterHomeRoute)
+}
 
 func RegisterHomeRoute(server *wk.HttpServer) {
 	home = &HomeController{}

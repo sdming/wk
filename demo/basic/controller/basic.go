@@ -10,6 +10,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"github.com/sdming/wk/demo/basic/model"
 )
 
@@ -24,6 +25,10 @@ func NewBasicController() *BasicController {
 }
 
 var basic *BasicController
+
+func init() {
+	boot.Boot(RegisterBasicRoute)
+}
 
 func RegisterBasicRoute(server *wk.HttpServer) {
 	basic = NewBasicController()

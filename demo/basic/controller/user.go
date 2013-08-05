@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"log"
 	"strings"
 )
@@ -32,6 +33,7 @@ func init() {
 	wk.TemplateFuncs["skill"] = getSkills
 	wk.TemplateFuncs["locationtext"] = locationText
 
+	boot.Boot(RegisterUserRoute)
 }
 
 type User struct {

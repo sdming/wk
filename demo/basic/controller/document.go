@@ -9,6 +9,7 @@ package controller
 
 import (
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 )
 
 func init() {
@@ -22,6 +23,10 @@ func NewDocController() *DocController {
 }
 
 var docController *DocController
+
+func init() {
+	boot.Boot(RegisterDocRoute)
+}
 
 func RegisterDocRoute(srv *wk.HttpServer) {
 	docController = NewDocController()

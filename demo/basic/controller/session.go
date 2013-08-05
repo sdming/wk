@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/sdming/kiss/kson"
 	"github.com/sdming/wk"
+	"github.com/sdming/wk/demo/basic/boot"
 	"github.com/sdming/wk/session"
 	"log"
 	"time"
@@ -24,6 +25,10 @@ func NewSession() *Session {
 }
 
 var sessionDemo *Session
+
+func init() {
+	boot.Boot(RegisterSessionRoute)
+}
 
 func RegisterSessionRoute(server *wk.HttpServer) {
 	sessionDemo = NewSession()
