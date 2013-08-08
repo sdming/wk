@@ -1093,7 +1093,7 @@ HttpServer启动时，默认注册三个HttpProcessor：StaticProcessor、RouteP
 StaticProcessor
 ---
 
-StaticProcessor负责处理静态文件，如果请求的路径能匹配到物理文件，则将HttpContext的的Result设置为FileResult。
+StaticProcessor负责处理静态文件，如果请求的路径能匹配到物理文件，则将HttpContext的的Result设置为FileResult。gwk只会将public子目录下的文件看做静态文件。
 
 StaticProcessor支持缓存静态文件以及自定义http response header。缓存静态文件在缓存一节详细介绍，自定义输出的http header是指为每个静态文件的Response设置你定义的http header，比如统一为静态文件设置Cache-Control。下面是配置的例子：
 
@@ -1155,9 +1155,403 @@ CompressProcessor设计时考虑能够按照MimeType或者RequestPath来过滤�
 事件
 ===
 
+gwk支持事件系统，但并没有硬编码有哪些事件，而是采用了比较松散的定义方式。
+
+订阅事件有两种方式: 调用On函数或者OnFunc函数
+
+	func On(moudle, name string, handler Subscriber) 
+
+	func OnFunc(moudle, name string, handler func(*EventContext))
+
+
+参数moudle是指订阅哪一个模块触发的事件，参数name是指订阅事件的名字，参数handler是处理事件的对象实例，是Subscriber类型的对象，Subscriber接口定义如下:
+
+	type Subscriber interface {
+		On(e *EventContext)
+	}
+
+
+	type SubscriberFunc func(*EventContext)
+
+	func (f SubscriberFunc) On(e *EventContext) {
+		f(e)
+	}
+
+EventContext定义如下:
+
+	type EventContext struct {
+		Moudle  string
+		Name    string
+		Source  interface{}
+		Data    interface{}
+		Context *HttpContext
+	}
+
+* Moudle：	触发事件的模块名
+* Name：	事件名
+* Source:	触发事件的变量
+* Data：    事件附带的参数，每个事件可能不同，由Source负责赋值
+* Context： HttpContext
+
+如果想要触发一个自定义事件，要调用HttpServer的Fire方法：
+
+	func (srv *HttpServer) Fire(moudle, name string, source, data interface{}, context *HttpContext) 
+
+参数说明参照EventContext的定义。
+
+使用事件系统可以做权限验证，日志、同一错误处理等等，十分方便。
+
+demo/basic项目中的event.go演示了如何使用事件：
+
+	wk.OnFunc("*", "*", eventTraceFunc)
+
+这段代码调用OnFunc订阅了所有的事件，在eventTraceFunc中记录所有事件的触发时间并存在HttpContext的Flash字段中，在Server端结束所有处理前把这些数据返回客户端，这样客户端就能得到每个代码段的执行时间。返回的数据格式如下：
+
+	_webserver	 start_request	 	0 ns 
+	    _static	 start_execute	 	13761 ns 
+	    _static	 end_execute	 	24829 ns 
+	    _route	 start_execute	 	27988 ns 
+	        _route	 start_action	50774 ns 
+	        _route	 end_action	 	62984 ns 
+	    _route	 end_execute	 	64255 ns 
+	    _render	 start_execute	 	66379 ns 
+	        _render	 start_result	68203 ns 
+	        _render	 end_result	 	27631463 ns 
+	    _render	 end_execute	 	27634149 ns 
+	_webserver	 end_request	 	27636472 ns 
+
+上面的数据列出了默认情况下gwk会触发的所有事件。
+
+上面的例子给出了profile代码执行事件的一种思路。
+
 
 配置
 ===
+
+前面的例子都是基于gwk的默认配置，接下来将如何自定义配置以及如何使用gwk的配置框架。
+
+gwk默认读取文件.conf/web.conf作为配置，如果文件不存在则采用预定义的默认配置。WebConfig的定义如下：
+
+
+	type WebConfig struct {
+		// 你可以给每一个Server设一个单独的名字，默认为""
+		ServerKey string
+
+		// 要监听的地址，默认为"0.0.0.0:8080"
+		Address string
+
+		// 根目录，默认为当前的工作目录
+		RootDir string
+
+		// 执行超时时间设置
+		Timeout int
+
+		// 静态文件的根目录，默认为RootDir下的public目录
+		PublicDir string
+
+		// 配置文件所在的目录，默认为RootDir下的conf目录
+		ConfigDir string
+
+		// View模板文件所在的目录，默认为RootDir下的views目录
+		ViewDir string
+
+		// 解析ConfigDir目录下的app.conf
+		AppConfig *kson.Node
+
+		// 解析ConfigDir目录下的plugin.conf
+		PluginConfig *kson.Node
+
+		// 读取Request的超时时间(秒)
+		ReadTimeout int
+
+		// 写Response的超时时间(秒)
+		WriteTimeout int
+
+		// Request headers的最大值
+		MaxHeaderBytes int
+
+		// 是否启用session
+		SessionEnable bool
+
+		// session的过期时间(秒)
+		SessionTimeout int
+
+		// SessionDriver is the name of driver
+		SessionDriver string
+
+		// 是否启用View引擎
+		ViewEnable bool
+
+		// 是否允许目录浏览，类似apache的Indexes 
+		IndexesEnable bool
+
+		// 是否允许自定义404页面
+		NotFoundPageEnable bool
+
+		// 是否允许自定义错误页面
+		ErrorPageEnable bool
+
+		// 是否开启Debug模式
+		Debug bool
+
+	}
+
+如果ConfigDir目录下存在app.conf和plugin.conf文件，gwk解析这两个文件并将解析好的内容存在AppConfig字段和PluginConfig字段，建议app.conf存放程序的配置数据，plugin.conf存放gwk各模块的配置数据。
+
+如果app.conf文件存在，gwk会使用fsnotify监控这个文件，如果文件改动就重新解析并刷新AppConfig字段。
+
+kson
+===
+
+gwk的配置文件采用自创的kson格式，类似json或者yaml，项目地址在(https://github.com/sdming/kiss/tree/master/kson，详细的例子请看项目的readme.md
+
+kson特点是
+
+* 首先方便人类阅读
+* 字符串不需要用""，除非存在特殊字符
+* 不需要用","分割字段，默认回车就是分隔符
+* 类似yaml但是不依赖缩进
+* 支持普通类型、map、slice、struct的序列化和反序列化
+* 支持注释，#开始的行会被看做注释，不会被解析
+
+先看一个配置数据的例子
+
+	#app config file demo
+	 
+	#string
+	key_string: demo
+	 
+	#string
+	key_int:    101
+	 
+	#bool
+	key_bool:   true
+	 
+	#float
+	key_float:  3.14
+	 
+	#map
+	key_map:    {
+	    key1:   key1 value
+	    key2:   key2 value
+	}
+	 
+	#array
+	key_array:  [
+	    item 1      
+	    item 2
+	]
+	 
+	#struct
+	key_struct: {
+	    Driver:     mysql           
+	    Host:       127.0.0.1
+	    User:       user
+	    Password:   password            
+	}
+	 
+	#composite
+	key_config: {   
+	    Log_Level:  debug
+	    Listen:     8000
+	 
+	    Roles: [
+	        {
+	            Name:   user
+	            Allow:  [
+	                /user       
+	                /order
+	            ]
+	        } 
+	        {
+	            Name:   *               
+	            Deny:   [
+	                /user
+	                /order
+	            ]
+	        } 
+	    ]
+	 
+	    Db_Log: {
+	        Driver:     mysql           
+	        Host:       127.0.0.1
+	        User:       user
+	        Password:   password
+	        Database:   log
+	    }
+	 
+	    Env:    {
+	        auth:       http://auth.io
+	        browser:    ie, chrome, firefox, safari
+	    }
+	}
+
+
+对应的Go代码的定义
+
+	type Driver struct {
+	    Driver   string
+	    Host     string
+	    User     string
+	    Password string
+	    A        string
+	    B        string
+	}
+	 
+	type Config struct {
+	    Log_Level string
+	    Listen    uint
+	    Roles     []Role
+	    Db_Log    Db
+	    Env       map[string]string
+	}
+	 
+	type Role struct {
+	    Name  string
+	    Allow []string
+	    Deny  []string
+	}
+	 
+	type Db struct {
+	    Driver   string
+	    Host     string
+	    User     string
+	    Password string
+	}
+
+
+kson格式的数据解析后存在kson.Node类型的实例中，具体的定义请参考kson项目的说明，这里只介绍kson.Node几个常用方法。
+
+Dump
+
+将node里的数据dump为kson格式的文本
+
+	func (c *ConfigController) Dump(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    return wk.Data(c.node.MustChild("key_config").Dump()), nil
+	}
+        
+Child
+
+根据name返回node的子节点
+
+ 
+	func (c *ConfigController) Child(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    _, ok := c.node.Child("key_string")
+	    return wk.Data(ok), nil
+	}
+
+Query
+
+查询node的子节点，现版本只支持按照节点名查询，以后可能支持按照属性查询比如 name[@field=xxx]
+
+ 
+	func (c *ConfigController) Query(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    n, ok := c.node.Query("key_config Db_Log Host")
+	    if ok {
+	        return wk.Data(n.Literal), nil
+	    }
+	    return wk.Data(ok), nil
+	}
+        
+
+ChildStringOrDefault
+
+将子节点的内容解析为字符串返回，如果子节点不存在则返回默认值，类似的方法还有ChildIntOrDefault, ChildUintOrDefault, ChildFloatOrDefault, ChildBoolOrDefault, ChildStringOrDefault等
+
+	func (c *ConfigController) ChildStringOrDefault(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    s := c.node.ChildStringOrDefault("key_string_not", "default value")
+	    return wk.Data(s), nil
+	}
+        
+
+ChildInt
+
+将子节点的内容解析为Int64返回，如果子节点不存在则panic，类似的方法还有ChildInt, ChildUint, ChildFloat, ChildBool, ChildString等
+
+
+	func (c *ConfigController) ChildInt(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    i := c.node.ChildInt("key_int")
+	    return wk.Data(i), nil
+	}
+        
+
+Bool
+
+将节点的值解析为bool返回，类似的方法还有Int, Uint, Float, Bool, String等
+
+	func (c *ConfigController) Bool(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    b, err := c.node.MustChild("key_bool").Bool()
+	    if err != nil {
+	        return nil, err
+	    }
+	    return wk.Data(b), nil
+	}
+        
+
+Slice
+
+将子节点的内容解析为[]string
+	        
+	func (c *ConfigController) Slice(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    data, err := c.node.MustChild("key_array").Slice()
+	    if err != nil {
+	        return nil, err
+	    }
+	    return wk.Data(data), nil
+	}
+
+
+Map
+
+将子节点的内容解析为map[string]string
+
+            
+	func (c *ConfigController) Map(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    data, err := c.node.MustChild("key_map").Map()
+	    if err != nil {
+	        return nil, err
+	    }
+	    return wk.Data(data), nil
+	}
+        
+
+Value
+
+将子节点的内容解析到一个interface{}，传入的参数必须是可以通过reflect赋值的。
+
+           
+	func (c *ConfigController) Value(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    v := Driver{
+	        Driver:   "driver",
+	        Host:     "host",
+	        User:     "user",
+	        Password: "password",
+	        A:        "aaa",
+	        B:        "bbb",
+	    }
+	 
+	    err := c.node.MustChild("key_struct").Value(&v)
+	    if err != nil {
+	        return nil, err
+	    }
+	    return wk.Data(v), nil
+	}
+        
+
+接下来是一个解析复杂格式的例子
+
+            
+	func (c *ConfigController) Composite(ctx *wk.HttpContext) (wk.HttpResult, error) {
+	    conf := &Config{}
+	    err := c.node.MustChild("key_config").Value(conf)
+	    if err != nil {
+	        return nil, err
+	    }
+	    return wk.Data(conf), nil
+	}
+        
+
+kson支持常见数据格式(不承诺支持所有的数据格式)，而且解析速度比json要快。
 
 
 Session
