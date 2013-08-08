@@ -395,7 +395,20 @@ wk.Data函数返回 *DataResult对象，*DataResult实现了wk.HttpResult接口�
 
 如果没有找到路由参数{action}，gwk会将http method作为action，也就是把"get"，"post"，"delete"作为action，如果找不到对应的方法，会将{action}{method}组合起来作为action，这在一些场合还是比较实用的，如果还找不到对应的方法，则将"default"作为action，如果还是找不到对应的方法，则返回404.
 
-各种流行的MVC类开发框架比较多，controller应该不用做过多的介绍，接下来介绍HttpResult接口。
+事件
+---
+
+如果Controller的每个Action执行前后需要执行一些相同的代码怎么办？这就需要用到ActionSubscriber接口:
+
+	type ActionSubscriber interface {
+		OnActionExecuting(action *ActionContext)
+		OnActionExecuted(action *ActionContext)
+		OnException(action *ActionContext)
+	}
+
+OnActionExecuting在具体的Action执行之前执行，OnActionExecuted在具体的Action执行之后执行，OnException在具体的Action执行出错后执行。
+
+通过ActionSubscriber可以做权限验证，数据验证，记录日志，同一错误处理等等。
 
 
 HttpResult
@@ -573,12 +586,30 @@ NotModifiedResult
 
 返回http.StatusNotModified
 
+ChanResult
+---
+
+可以用来模拟BigPipe，定义如下
+
+	type ChanResult struct {
+		Wait        sync.WaitGroup
+		Chan        chan string
+		ContentType string
+		Start       []byte
+		End         []byte
+		Timeout     time.Duration
+	}
+
+ChanResult会先输出Start，然后读取Chan中的字符串输出到客户端，最后输出End。
+
+
 自定义HttpResult
 ---
 
 自定义HttpResult十分简单，只要实现Execute(ctx *HttpContext) error方法就可以了，Go的interface机制让使用第三方的HttpResult或者开发一个HttpResult给别人使用变得很简单。
 
 gwk的demo中包含一个自定义HttpResult的例子[QrCodeResult](https://github.com/sdming/wk/blob/master/demo/basic/model/qr.go])，可以将文本转化为二维码显示，这个例子不兼容App Engine，只能在线下运行demo程序看效果。
+
 
 
 模板引擎
@@ -847,35 +878,305 @@ gwk默认添加了若干Template Func
 	# -->end GoHtml
 
 
-接下里介绍gwk的内部实现机制。
+接下来介绍gwk的内部实现机制。
 
 
 GWK内部机制
 ===
 
+gwk的内部逻辑十分简单，它的核心对象是HttpServer，HttpContent, HttpProcessor。下面分别介绍。
 
-Configration
-===
+HttpServer
+---
 
-Event
-===
+前面的例子里已经演示了怎么用函数NewDefaultServer创建一个缺省配置的HttpServer实例，NewDefaultServer会调用函数ReadDefaultConfigFile来尝试读取默认的配置文件，如果./conf/web.conf存在，则解析这个配置文件，如果解析出错或者文件不存在则调用函数NewDefaultConfig获得缺省配置。
 
-ORM
-===
+你也可以用NewHttpServer传入WebConfig参数创建HttpServer实例。
 
-Validation
-===
+	func NewHttpServer(config *WebConfig) (srv *HttpServer, err error) 
 
-Cache, gzip
-===
+WebConfig的定义在后面介绍。
+
+创建好HttpServer后，调用它的Start方法来监听http请求，启动Web服务。如果你的代码运行在Google App Engine这样不需要监听端口的平台，可以调用Setup方法来初始化HttpServer。Start方法内部实际上是先调用Setup方法，再调用http.Server的ListenAndServe方法。
+
+HttpServer内部会创建一个http.Server实例，可以通过InnerServer方法来获得这个http.Server。
+
+HttpServer有一个Variables字段，如果你有什么整个HttpServer共享的全局变量，可以放在Variables中。
+
+	//server variables
+	Variables map[string]interface{}
+
+
+HttpServer实现了http.Handler接口，ServeHTTP函数的内部流程是:
+
+1. 创建HttpContext
+2. 循环执行每一个HttpProcessor的Execute方法
+
+我们先介绍HttpContext。
+
+HttpContext
+---
+
+HttpContext是对当前http请求的封装，定义如下:
+
+	type HttpContext struct {
+		Server *HttpServer
+		Request *http.Request
+		Resonse http.ResponseWriter
+		Method string
+		RequestPath string
+		PhysicalPath string
+		RouteData RouteData
+		ViewData map[string]interface{}
+		Result HttpResult
+		Error error
+		Flash map[string]interface{}
+		Session Session
+		SessionIsNew bool
+	}
+
+* Server:		当前的HttpServer
+* Request:		http.Request
+* Resonse: 		http.ResponseWriter
+* Method:		http请求的method，比如GET，PUT，DELETE，POST...
+* RequestPath:	http请求url的path部分
+* PhysicalPath: 请求对应的物理文件，只有请求的是静态文件时，该字段才有值
+* RouteData: 	RequestPath解析后的路由参数
+* ViewData:		存放传递给View模板的数据
+* Result:		此次请求的HttpResult
+* Error:		此次请求中的Error
+* Flash:		可以存放临时变量，生命周期为此次请求
+* Session:		Session
+* SessionIsNew:	Session是否此次在请求创建
+
+
+HttpContext还定义了若干方法简化一些常见的操作:
+
+RouteValue，读取RouteData里的数据
+
+	func (ctx *HttpContext) RouteValue(name string) (string, bool) 
+
+FormValue，调用http.Request的FormValue，FV也是相同的逻辑
+
+	func (ctx *HttpContext) FV(name string) string 
+	func (ctx *HttpContext) FormValue(name string) string
+
+另外还有FormInt，FormIntOr，FormBool，FormBoolOr，FormFloat，FormFloatOr，前面已经做过介绍。
+
+ReqHeader，读取Http request header的数据
+
+	func (ctx *HttpContext) ReqHeader(name string) string 
+
+SetHeader，设置Http resonse header的数据
+
+	func (ctx *HttpContext) SetHeader(key string, value string) 
+	
+AddHeader，向http response header添加数据
+
+	func (ctx *HttpContext) AddHeader(key string, value string) 
+
+ContentType，设置http response header的"Content-Type"	
+	
+	func (ctx *HttpContext) ContentType(ctype string) 
+	
+Status，设置返回http status code
+
+	func (ctx *HttpContext) Status(code int) 
+
+Accept，读取http request header的"Accept"	
+
+	func (ctx *HttpContext) Accept() string 
+
+Write，调用http response的Write方法
+
+	func (ctx *HttpContext) Write(b []byte) (int, error) 
+	
+Expires，设置http response header的"Expires"
+
+	func (ctx *HttpContext) Expires(t string) 
+	
+SetCookie，设置cookie
+
+	func (ctx *HttpContext) SetCookie(cookie *http.Cookie) 
+	
+Cookie，读取Cookie
+
+	func (ctx *HttpContext) Cookie(name string) (*http.Cookie, error) 
+	
+SessionId，返回SessionId，只有启用了Session才有效
+
+	func (ctx *HttpContext) SessionId() string 
+
+GetFlash，读取Flash中的变量
+
+	func (ctx *HttpContext) GetFlash(key string) (v interface{}, ok bool)
+
+SetFlash，设置Flash中的变量
+
+	func (ctx *HttpContext) SetFlash(key string, v interface{})
+
+ReadBody，读取整个http request的内容
+
+	func (ctx *HttpContext) ReadBody() ([]byte, error)
+
+Flush，Flush当前Response中的数据到客户端
+
+	func (ctx *HttpContext) Flush() {
+	
+前面介绍的ChanResult就是调用Flush把内容输出到客户端，代码基本逻辑如下:
+
+	ctx.Write(c.Start)
+	ctx.Flush()
+
+	if c.Timeout < time.Millisecond {
+		c.Timeout = defaultChanResultTimeout
+	}
+
+	waitchan := make(chan bool)
+	donechan := make(chan bool)
+
+	go func() {
+		for s := range c.Chan {
+			ctx.Write([]byte(s))
+			ctx.Flush()
+		}
+		donechan <- true
+	}()
+
+	go func() {
+		c.Wait.Wait()
+		close(c.Chan)
+		waitchan <- true
+	}()
+
+	select {
+	case <-waitchan:
+	case <-time.After(c.Timeout):
+	}
+
+	<-donechan
+	ctx.Write(c.End)
+
 
 HttpProcessor
+---
+
+HttpProcessor的定义如下
+
+	type HttpProcessor interface {
+		Execute(ctx *HttpContext)
+		Register(server *HttpServer)
+	}
+
+Execute负责处理http请求，Register会在HttpServer初始化时调用一次，如果你的HttpProcessor需要执行一些初始化代码，可以放在Register方法中。
+
+调用RegisterProcessor可以注册一个HttpProcessor
+
+	func RegisterProcessor(name string, p HttpProcessor)
+
+注册的HttpProcessor存在ProcessTable类型的全局变量中
+
+	type ProcessTable []*Process
+
+	type Process struct {
+		Name string
+		Path string
+		Method string 
+		Handler HttpProcessor
+	}
+
+
+如果一个Processor需要特定的条件才执行，可以设置它的Path和Method字段，Method是要匹配的http method，既GET、PUT、POST、DELETE...，"*"或者""匹配所有的http method，Path是要匹配的Request Path，目前版本是前缀匹配，以后可能改成支持通配符。
+
+HttpServer启动时，默认注册三个HttpProcessor：StaticProcessor、RouteProcessor、RenderProcessor。
+
+StaticProcessor
+---
+
+StaticProcessor负责处理静态文件，如果请求的路径能匹配到物理文件，则将HttpContext的的Result设置为FileResult。
+
+StaticProcessor支持缓存静态文件以及自定义http response header。缓存静态文件在缓存一节详细介绍，自定义输出的http header是指为每个静态文件的Response设置你定义的http header，比如统一为静态文件设置Cache-Control。下面是配置的例子：
+
+	#static processor config
+	static_processor: {
+
+		cache_enable:	true
+		cache_expire:	3600
+
+		header:	{
+			Cache-Control: 	max-age=43200
+			X-Title: 		gwk-demo
+		}
+	}
+	# -->end static processor
+
+
+RouteProcessor
+---
+
+RouteProcessor负责按照你定义的路由规则调用具体的处理代码，逻辑很简单，只有几十行代码。
+
+RenderProcessor
+---
+
+RenderProcessor负责执行HttpResult的Execute，也只有几十行代码。HttpResult没有赋值的话则返回404错误。
+
+自定义HttpProcessor
+---
+
+你可以增删HttpProcessor或者调整顺序来改变默认的处理逻辑，比如你的程序是一个web api服务，不需要处理静态文件，则可以去掉RouteProcessor。ProcessTable定义了Append、InsertBefore、InsertAfter、Remove方法来简化对HttpProcessor的调整。
+
+http gzip压缩
+---
+
+CompressProcessor可以对http输出做gzip压缩，需要注册到RenderProcessor之前才有效，其本质是用compressResponseWriter来代替默认的ResponseWriter。
+
+	type CompressProcessor struct {
+		Enable   bool
+		Level    int
+		MimeType string
+	}
+
+	type compressResponseWriter struct {
+		rw            http.ResponseWriter
+		writer        compresser
+		contentType   string
+		format        string
+		headerWritten bool
+	}
+
+CompressProcessor设计时考虑能够按照MimeType或者RequestPath来过滤需要压缩的内容，但一直没实现，因为访问量小流量小的网站开不开启gzip压缩意义不大，访问量大的网站一般会用一些http反向代理或者http缓存的服务，自己没必要处理gzip压缩。
+
+通过自定义HttpProcessor，你可以为全网站做统一的权限验证，访问限制，日志处理，错误处理等等。
+
+除了HttpProcessor，你还可以通过gwk的事件机制来实现这些逻辑。
+
+
+事件
 ===
+
+
+配置
+===
+
 
 Session
 ===
 
-BIG Piple
+
+缓存
+===
+Cache, gzip
 
 
-[http://gwk-demo.appspot.com/file/upload] 包含文件上传
+其他
+===
+
+orm=kdb,validation=false
+
+
+关键词
+===
+
+Golang, Go, Web Framework, Web Server Kit, gwk, 
+

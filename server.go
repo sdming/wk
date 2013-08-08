@@ -105,6 +105,11 @@ func (srv *HttpServer) init() error {
 	return nil
 }
 
+// InnerServer return inner embedded *http.Server
+func (srv *HttpServer) InnerServer() *http.Server {
+	return srv.server
+}
+
 // listenAndServe
 func (srv *HttpServer) listenAndServe() (err error) {
 	srv.server = &http.Server{

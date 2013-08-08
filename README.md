@@ -16,9 +16,8 @@ Roadmap
 * 0.4 test on go 1.1. may 2013  
 * 0.5 cookie, session. may 2013 
 * 0.6 view engine. may 2013  
-* 0.7 watch & load config. june 2013             
-* 1.0 go. july 2013   
-* 1.x boot    
+* 0.7 watch & load config. june 2013              
+* 1.x     
 
 Requirements
 ---
@@ -28,13 +27,17 @@ go 1.1
 Usage
 ---
 
-go get github.com/sdming/kiss  
-go get github.com/sdming/mcache  
+go get github.com/howeyc/fsnotify    
+go get github.com/sdming/kiss   
+go get github.com/sdming/mcache   
 go get github.com/sdming/wk  
 
 Document
 ---
-Take time to translate documents to english. 
+
+Sorry for bad English，if you'd like to improve documents，please pull a request. 
+
+chinese document: https://github.com/sdming/wk/blob/master/cn.md  
 
 Demo  
 ---
@@ -341,7 +344,7 @@ Template Funcs
 * incl:	include or not
 * selected:	return "selected" or ""
 * checked: 	return "checked" or ""
-* nl2br:	replace "\n" with "<br/>" 
+* nl2br:	replace "\n" with `"<br/>" `
 * jsvar:	create javascript variable, like var name = {...}
 * import:	import a template file
 * partial:	call a template
@@ -402,11 +405,6 @@ Maybe, maybe not. don't have a plan yet. focus on web server.
 Validation
 ---
 No
-
-Css & js bundling
----
-Do we really need it ? 
-./demo/basic/model/file.go is a very sample of how to bundle files.   
 
 Cache, gzip
 ---

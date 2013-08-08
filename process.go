@@ -26,7 +26,7 @@ type Process struct {
 	Path string
 
 	// Method is http method to match, * or empty to match all
-	Method string //http method
+	Method string
 
 	// Handler is the HttpProcessor
 	Handler HttpProcessor
@@ -111,6 +111,18 @@ func RegisterProcessor(name string, p HttpProcessor) {
 		Name:    name,
 		Path:    _root,
 		Method:  _any,
+		Handler: p,
+	}
+
+	Processes.Append(process)
+}
+
+// RegisterProcessorWith append a HttpProcessor to global ProcessTable, with field method and path
+func RegisterProcessorWith(name string, p HttpProcessor, method, path string) {
+	process := &Process{
+		Name:    name,
+		Path:    method,
+		Method:  path,
 		Handler: p,
 	}
 
