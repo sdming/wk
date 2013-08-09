@@ -1303,7 +1303,7 @@ gwk默认读取文件.conf/web.conf作为配置，如果文件不存在则采用
 kson
 ===
 
-gwk的配置文件采用自创的kson格式，类似json或者yaml，项目地址在(https://github.com/sdming/kiss/tree/master/kson，详细的例子请看项目的readme.md
+gwk的配置文件采用自创的kson格式，类似json或者yaml，项目地址在https://github.com/sdming/kiss/tree/master/kson，详细的例子请看项目的readme.md
 
 kson特点是
 
@@ -1557,20 +1557,175 @@ kson支持常见数据格式(不承诺支持所有的数据格式)，而且解�
 Session
 ===
 
+Go的net/http本身不带session的机制，需要开发人员自行实现，gwk实现了内存中的session存储机制，如果需要将session存在其他地方比如redis或者memcache需要实现gwk的session.Driver接口。
+
+session.Driver
+---
+
+session.Driver的接口如下
+
+
+	type Driver interface {
+		// 初始化
+		Init(options string) error
+
+		// Driver的名字
+		Name() string
+
+		// 添加key，如果重复返回false,error
+		Add(sessionId, key string, value interface{}) (bool, error)
+
+		// 读取key的值，如果不存在返回nil,false,nil，如果报错返回nil,false,error
+		Get(sessionId, key string) (interface{}, bool, error)
+
+		// 添加key，如果存在则更新
+		Set(sessionId, key string, value interface{}) error
+
+		// 移除key
+		Remove(sessionId, key string) error
+
+		// 根据sessionid创建新的session
+		New(sessionId string, timeout time.Duration) error
+
+		// 移除整个session
+		Abandon(sessionId string) error
+
+		// 判断sessionid是否存在
+		Exists(sessionId string) (bool, error)
+
+		// 返回session中所有key
+		Keys(sessionId string) ([]string, error)
+	}
+
+gwk的Driver接口相比其他的框架要复杂一点，主要是为了Driver的开发人员可以实现更精确的控制。
+
+自定义的session.Driver可以通过函数Register注册。
+
+	func Register(name string, driver Driver)
+
+gwk内置了In-memory的session.Driver的实现， 注册的名字为"session_default"，是基于开源项目MCache的，MCache的详细信息请参考其项目主页 [https://github.com/sdming/mcache]。
+
+你可以通过修改web.conf文件或者直接修改WebConfig实例来启用或者关闭session机制，配置项如下:
+
+* SessionEnable: 	是否启用session
+* SessionTimeout: 	session的超时时间
+* SessionDriver:	session driver的名字
+
+如果你的session.Driver需要保存配置信息，请放在plugin.conf文件，gwk初始化时会将Config.PluginConfig.Child(session_driver_name)的数据作为options参数调用Driver的Init方法。
+
+使用Session
+---
+
+你可以通过HttpContext的字段Session来获得session实例，字段SessionIsNew来获取session是否当前的请求创建的，方法SessionId()获取session的id。
+
+./demo中的session.go文件演示了如何操作session。
+
+获取session id
+
+	// url: /session/id
+	func (c *Session) Id(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		id := ctx.SessionId()
+		return wk.Data(id), nil
+	}
+
+添加session
+
+
+	// url: /session/add?k=test&v=101
+	func (c *Session) Add(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		ok, err := ctx.Session.Add(ctx.FV("k"), ctx.FV("v"))
+		return wk.Data(ok), err
+	}
+
+读取session中key的值
+
+	// url: /session/get?k=test
+	func (c *Session) Get(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
+		v, _, err := ctx.Session.Get(ctx.FV("k"))
+		return wk.Data(v), err
+	}
+
+
+设置session 
+
+	// url: /session/set?k=test&v=101
+	func (c *Session) Set(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		err := ctx.Session.Set(ctx.FV("k"), ctx.FV("v"))
+		return wk.Data(err == nil), err
+	}
+
+移除session中的key
+
+	// url: /session/remove?k=test
+	func (c *Session) Remove(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		err := ctx.Session.Remove(ctx.FV("k"))
+		return wk.Data(err == nil), err
+	}
+
+放弃整个session
+
+	// url: /session/abandon
+	func (c *Session) Abandon(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		err := ctx.Session.Abandon()
+		return wk.Data(true), err
+	}
+
+返回session中所有的key
+
+	// url: /session/keys
+	func (c *Session) Keys(ctx *wk.HttpContext) (wk.HttpResult, error) {
+		keys, err := ctx.Session.Keys()
+		return wk.Data(fmt.Sprintln(keys)), err
+	}
+
+另外在session.go中还包含一个如何注册自定义session.Driver的例子。
+
 
 缓存
 ===
-Cache, gzip
+
+view模板的缓存以及配置数据的缓存前文已经讲过，除此之外gwk可以将静态文件的内容缓存到内存中。这种缓存策略并不一定很有用，如果网站规模小流量不大，缓存静态文件的收益有限，而网站达到一定规模，为了提升性能，静态文件常部署在单独的静态文件服务器或者借助CDN，另外Go的内核用sendfile来处理静态文件，如果将其内容缓存到内存就没有办法用到sendfile的优势了。
+
+开启gwk静态文件缓存的配制方法如下：
+	
+	#plugin.conf
+
+	#static processor config
+	static_processor: {
+
+		#开启静态文件缓存，默认是false
+		cache_enable:	true
+
+		#缓存1小时(3600秒)，默认是86400秒
+		cache_expire:	3600
+	}
+	# -->end static processor
 
 
-其他
+gzip压缩可以参考前文的CompressProcessor部分
+
+
+gwk并不内置供开发人员调用的Cache功能，如果需要in-memory的第三方缓存库，可以参考上文提到的MCache，项目在 [https://github.com/sdming/mcache]
+
+验证
 ===
 
-orm=kdb,validation=false
+虽然很多Web框架提供了验证功能，但gwk还没有这方面的计划。
+
+ORM
+===
+
+gwk关注Web开发，短时间内不会包含ORM的功能，需要访问数据库的开发人员可以关注开源项目(kdb)[https://github.com/sdming/kdb]，项目刚启动，功能大概完成了30%。
+
+
+Performance benchmark
+==
+
+Incoming
 
 
 关键词
 ===
 
-Golang, Go, Web Framework, Web Server Kit, gwk, 
+Golang, Go, Web Framework, Web Server Kit, gwk, MVC
 
