@@ -1707,6 +1707,17 @@ gzip压缩可以参考前文的CompressProcessor部分
 
 gwk并不内置供开发人员调用的Cache功能，如果需要in-memory的第三方缓存库，可以参考上文提到的MCache，项目在 [https://github.com/sdming/mcache]
 
+日志
+===
+
+gwk本身不实现复杂的日志功能，只是公开了一个log.Logger类型的字段Logger，所有的日志信息会被记录到这个Logger中，另外你还可以通过设置LogLevel来调整记录日志的级别，默认为LogError，支持的日志级别为：
+
+	const (
+		LogError = iota
+		LogDebug
+	)
+
+
 验证
 ===
 
