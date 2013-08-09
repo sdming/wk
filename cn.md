@@ -608,7 +608,7 @@ ChanResult会先输出Start，然后读取Chan中的字符串输出到客户端�
 
 自定义HttpResult十分简单，只要实现Execute(ctx *HttpContext) error方法就可以了，Go的interface机制让使用第三方的HttpResult或者开发一个HttpResult给别人使用变得很简单。
 
-gwk的demo中包含一个自定义HttpResult的例子[QrCodeResult](https://github.com/sdming/wk/blob/master/demo/basic/model/qr.go])，可以将文本转化为二维码显示，这个例子不兼容App Engine，只能在线下运行demo程序看效果。
+gwk的demo中包含一个自定义HttpResult的例子[QrCodeResult](https://github.com/sdming/wk/blob/master/demo/basic/model/qr.go)，可以将文本转化为二维码显示，这个例子不兼容App Engine，只能在线下运行demo程序看效果。
 
 
 
@@ -1603,7 +1603,7 @@ gwk的Driver接口相比其他的框架要复杂一点，主要是为了Driver�
 
 	func Register(name string, driver Driver)
 
-gwk内置了In-memory的session.Driver的实现， 注册的名字为"session_default"，是基于开源项目MCache的，MCache的详细信息请参考其项目主页 [https://github.com/sdming/mcache]。
+gwk内置了In-memory的session.Driver的实现， 注册的名字为"session_default"，是基于开源项目MCache的，MCache的详细信息请参考其项目主页 https://github.com/sdming/mcache。
 
 你可以通过修改web.conf文件或者直接修改WebConfig实例来启用或者关闭session机制，配置项如下:
 
@@ -1705,7 +1705,7 @@ view模板的缓存以及配置数据的缓存前文已经讲过，除此之外g
 gzip压缩可以参考前文的CompressProcessor部分
 
 
-gwk并不内置供开发人员调用的Cache功能，如果需要in-memory的第三方缓存库，可以参考上文提到的MCache，项目在 [https://github.com/sdming/mcache]
+gwk并不内置供开发人员调用的Cache功能，如果需要in-memory的第三方缓存库，可以参考上文提到的MCache，项目在 https://github.com/sdming/mcache。
 
 日志
 ===
@@ -1726,7 +1726,7 @@ gwk本身不实现复杂的日志功能，只是公开了一个log.Logger类型�
 ORM
 ===
 
-gwk关注Web开发，短时间内不会包含ORM的功能，需要访问数据库的开发人员可以关注开源项目(kdb)[https://github.com/sdming/kdb]，项目刚启动，功能大概完成了30%。
+gwk关注Web开发，短时间内不会包含ORM的功能，需要访问数据库的开发人员可以关注开源项目https://github.com/sdming/kdb，项目刚启动，功能大概完成了30%。
 
 
 Performance benchmark
