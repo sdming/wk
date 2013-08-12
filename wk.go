@@ -49,7 +49,7 @@ const (
 	ContentTypeHTML       = "text/html"
 	ContentTypeXml        = "text/xml"
 	ContentTypeCss        = "text/css"
-	ContentTypePlain      = "text/plain"
+	ContentTypeText       = "text/plain"
 	ContentTypeGif        = "image/gif"
 	ContentTypeIcon       = "image/x-icon"
 	ContentTypeJpeg       = "image/jpeg"

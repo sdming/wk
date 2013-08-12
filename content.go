@@ -78,3 +78,20 @@ func (c *DataResult) Execute(ctx *HttpContext) error {
 	_, err := fmt.Fprintln(ctx.Resonse, c.Data)
 	return err
 }
+
+// TextResult is plaintext
+type TextResult string
+
+// Data return *DataResult
+func Text(data string) TextResult {
+	return TextResult(data)
+}
+
+// Execute write Data to response
+func (t TextResult) Execute(ctx *HttpContext) error {
+	if ctype := ctx.ReqHeader("Content-Type"); ctype != "" {
+		ctx.SetHeader("Content-Type", ContentTypeText)
+	}
+	_, err := ctx.Resonse.Write([]byte(t))
+	return err
+}
