@@ -82,7 +82,7 @@ func (c *DataResult) Execute(ctx *HttpContext) error {
 // TextResult is plaintext
 type TextResult string
 
-// Text return *TextResult
+// Text return a *TextResult
 func Text(data string) TextResult {
 	return TextResult(data)
 }
