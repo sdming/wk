@@ -176,6 +176,14 @@ func (ve *GoHtml) getCache(file string) (t *template.Template, ok bool) {
 	return t, ok
 }
 
+func (ve *GoHtml) AddTemplate(name string, t *template.Template) error {
+	if !ve.EnableCache {
+		return errors.New("Cache is not enable")
+	}
+	ve.setCache(name, t)
+	return nil
+}
+
 func (ve *GoHtml) setCache(file string, t *template.Template) {
 	ve.Lock()
 	defer ve.Unlock()
