@@ -4,14 +4,14 @@ gwk
 Web, Let's GO!
 
 gwk is a smart &amp; lightweight web server engine 
-gwk is webkit for web server  
+gwk is a webkit for web server  
 
 
 Roadmap
 ---
 
 * 0.1 fork gomvc, refactoring. april 2013  
-* 0.2 configration framework. april 2013  
+* 0.2 configuration framework. april 2013  
 * 0.3 web api server. april 2013  
 * 0.4 test on go 1.1. may 2013  
 * 0.5 cookie, session. may 2013 
@@ -61,7 +61,7 @@ Getting Started
 	server.Start()
 
 
-How to run demo  
+How to run the demo  
 ---
 	cd ./demo/basic  
 	go run main.go  
@@ -70,7 +70,7 @@ How to run demo
 Route
 ---
 
-Go cann't get parameter name of function by reflect, so it's a littel tricky to create parameters when call function by reflect.  
+Go can't get parameter name of a function by reflect, so it's a little tricky to create parameters when calling the function by reflect.  
 
 
 	// url: /demo/xxx/xxx
@@ -154,7 +154,7 @@ Controller
 
 Route url like "/demo/{action}" to T, call it's method by named {action}.     
 
-Current version only support method of type (*HttpContext) (result HttpResult, error)  
+Current version only supports method of type (*HttpContext) (result HttpResult, error)  
 
 	// url: /demo/int/32
 	func (c *DemoController) Int(ctx *wk.HttpContext) (result wk.HttpResult, err error) {
@@ -168,16 +168,16 @@ Current version only support method of type (*HttpContext) (result HttpResult, e
 Formatter
 ---
 
-If function doesn't return HttpResult, server will convert result to HttpResult according Accept of request. you can set Formatter for each function, or register global Formatter.  
+If the function doesn't return HttpResult, server will convert result to HttpResult according Accept of request. You can set Formatter for each function, or register global Formatter.  
 
 	// return formatted (HttpResult, true) or return (nil, false) if doesn't format it
 	type FormatFunc func(*HttpContext, interface{}) (HttpResult, bool)
 
 
-Configration 
+Configuration 
 ---
 
-wk can manage configration for you. below is config example, more example at test/config_test.go
+wk can manage configuration for you.Below is a config example, more examples at test/config_test.go
 
 	#app config file demo
 
@@ -283,7 +283,7 @@ HttpResult know how to write http.Response
 	}
 
 
-The lifecyle is 
+The lifecycle is 
 
 1. receive request, create HttpContext   
 3. run each HttpProcessor  
@@ -292,7 +292,7 @@ The lifecyle is
 HttpProcessor
 ---
 
-You can add or remove HttpProcessor before server starting.  
+You can add or remove HttpProcessor before server started.  
 
 	type ProcessTable []*Process
 
@@ -324,11 +324,11 @@ Event
 
 Call Fire() to fire an event
 
-	Fire(moudle, name string, source, data interface{}, context *HttpContext) 
+	Fire(module, name string, source, data interface{}, context *HttpContext) 
 
 Call On() to listen events 
 
-	On(moudle, name string, handler Subscriber) 
+	On(module, name string, handler Subscriber) 
 
 
 View engine
@@ -349,7 +349,7 @@ Template Funcs
 * import:	import a template file
 * partial:	call a template
 
-you can find examples in folder "./test/views/" or "./demo/basic/views/"
+You can find examples in the folder "./test/views/" or "./demo/basic/views/"
 
 Example
 ---
@@ -400,7 +400,7 @@ Example
 
 ORM
 ---
-Maybe, maybe not. don't have a plan yet. focus on web server.    
+Maybe, maybe not. Don't have a plan yet.Focus on web server.    
 
 Validation
 ---
